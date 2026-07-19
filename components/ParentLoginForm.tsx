@@ -50,7 +50,7 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-2.5">
       <div className="space-y-1">
-        <label htmlFor="nisn" className="block text-xs font-bold text-white/80 tracking-wide">
+        <label htmlFor="nisn" className="block text-xs font-bold text-gray-700 tracking-wide">
           NISN
         </label>
         <input
@@ -63,49 +63,49 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
           value={nisn}
           onChange={handleNisnChange}
           maxLength={10}
-          className="h-10 w-full rounded-xl border border-white/25 bg-white/18 px-3.5 text-sm font-semibold text-white placeholder-white/60 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/25 focus:ring-2 focus:ring-white/25"
+          className="h-10 w-full rounded-xl border border-gray-200 bg-white px-3.5 text-sm font-semibold text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-red-400 focus:ring-2 focus:ring-red-100"
         />
         {error && (
-          <p className="animate-fade-in text-xs font-bold text-red-300">{error}</p>
+          <p className="animate-fade-in text-xs font-bold text-red-600">{error}</p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="group relative flex h-10 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-md shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+        className="group relative flex h-10 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-red-600 to-red-700 font-bold text-white shadow-md shadow-red-200 transition-all duration-200 hover:-translate-y-0.5 hover:from-red-700 hover:to-red-800 hover:shadow-lg active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
         <span className="relative text-sm">{loading ? "Memproses..." : "Masuk"}</span>
       </button>
 
-      <div className="space-y-1 text-center text-xs text-white/45">
-        <p className="font-semibold text-white/65">Lupa NISN anak Anda?</p>
+      <div className="space-y-1 text-center text-xs text-gray-400">
+        <p className="font-semibold text-gray-500">Lupa NISN anak Anda?</p>
         <p>
           {siteConfig.school.whatsappNumber ? (
             <a href={`https://wa.me/${siteConfig.school.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
-              className="font-bold text-yellow-300/85 hover:text-yellow-200 transition-colors">
+              className="font-bold text-red-600 hover:text-red-700 transition-colors">
               Hubungi Admin Sekolah via WhatsApp
             </a>
           ) : (
-            <span className="font-semibold text-white/40">Hubungi Admin Sekolah via WhatsApp</span>
+            <span className="font-semibold text-gray-300">Hubungi Admin Sekolah via WhatsApp</span>
           )}
         </p>
         <p className="font-semibold">atau</p>
         <p>
           {siteConfig.links.nisnCheckUrl ? (
             <a href={siteConfig.links.nisnCheckUrl} target="_blank" rel="noopener noreferrer"
-              className="font-bold text-yellow-300/85 hover:text-yellow-200 transition-colors">
+              className="font-bold text-red-600 hover:text-red-700 transition-colors">
               Cek NISN di sini
             </a>
           ) : (
-            <span className="font-semibold text-white/40">Cek NISN di sini</span>
+            <span className="font-semibold text-gray-300">Cek NISN di sini</span>
           )}
         </p>
       </div>
 
       <button type="button" onClick={onBack}
-        className="mx-auto block text-xs font-bold text-white/35 transition-colors hover:text-white/60">
+        className="mx-auto block text-xs font-bold text-gray-400 transition-colors hover:text-gray-600">
         &larr; Kembali
       </button>
     </form>
