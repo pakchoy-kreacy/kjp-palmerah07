@@ -117,16 +117,22 @@ export async function PATCH(request: Request) {
   const disabled = disabledColumns(formFields ?? [], section);
   const cleanData = stripDisabled(data, disabled);
 
+  // Normalize null → undefined so Zod optional() doesn't reject
+  const normalized: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(cleanData)) {
+    normalized[k] = v === null ? undefined : v;
+  }
+
   let validated: Record<string, unknown>;
   let table: string;
   if (section === "student") {
-    validated = studentDataDraftSchema.parse(cleanData);
+    validated = studentDataDraftSchema.parse(normalized);
     table = "student_data";
   } else if (section === "guardian") {
-    validated = guardianDataDraftSchema.parse(cleanData);
+    validated = guardianDataDraftSchema.parse(normalized);
     table = "guardian_data";
   } else {
-    validated = emergencyDataDraftSchema.parse(cleanData);
+    validated = emergencyDataDraftSchema.parse(normalized);
     table = "emergency_contacts";
   }
 

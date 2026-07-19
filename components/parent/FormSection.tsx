@@ -96,6 +96,15 @@ export function FormSection({
     [fields, enabledKeys, section]
   );
 
+  const sanitizedDefaults = React.useMemo(() => {
+    const raw = defaultValues ?? {};
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      out[k] = v === null ? "" : v;
+    }
+    return out;
+  }, [defaultValues]);
+
   const {
     register,
     handleSubmit,
@@ -105,7 +114,7 @@ export function FormSection({
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: defaultValues ?? {},
+    defaultValues: sanitizedDefaults,
     mode: "onBlur",
   });
 
