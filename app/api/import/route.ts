@@ -7,16 +7,25 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get("file") as File | null;
+  const isPreview = form.get("preview") === "true";
+
   if (!file) {
     return NextResponse.json({ error: "File wajib diupload." }, { status: 400 });
   }
 
   const buf = await file.arrayBuffer();
-  const wb = XLSX.read(new Uint8Array(buf), { type: "array" });
+  let wb;
+  try {
+    wb = XLSX.read(new Uint8Array(buf), { type: "array" });
+  } catch {
+    return NextResponse.json({ error: "File tidak dapat dibaca. Pastikan format XLSX/XLS/CSV." }, { status: 400 });
+  }
   const sheet = wb.Sheets[wb.SheetNames[0]];
-  const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, {
-    defval: "",
-  });
+  const raw = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: "" });
+
+  if (raw.length === 0) {
+    return NextResponse.json({ error: "File kosong atau tidak memiliki data." }, { status: 400 });
+  }
 
   const normalize = (h: string) => h.toLowerCase().replace(/[^a-z]/g, "");
   const findCol = (row: Record<string, any>, want: string) => {
@@ -24,18 +33,47 @@ export async function POST(request: Request) {
     return key ? row[key] : "";
   };
 
-  const records = raw
-    .map((r) => {
-      const nisn = String(findCol(r, "nisn") ?? "").trim();
-      const name = String(findCol(r, "nama") ?? "").trim();
-      const cls = String(findCol(r, "kelas") ?? "").trim();
-      return { nisn, name, class: cls };
-    })
-    .filter((r) => r.nisn && r.name && r.class);
+  const errors: { row: number; message: string }[] = [];
+  const records: { nisn: string; name: string; class: string }[] = [];
+
+  raw.forEach((r, i) => {
+    const nisn = String(findCol(r, "nisn") ?? "").trim();
+    const name = String(findCol(r, "nama") ?? "").trim();
+    const cls = String(findCol(r, "kelas") ?? "").trim();
+    const rowNum = i + 2;
+
+    if (!nisn) { errors.push({ row: rowNum, message: "NISN kosong" }); return; }
+    if (!/^\d{10}$/.test(nisn)) { errors.push({ row: rowNum, message: `NISN "${nisn}" harus 10 digit angka` }); return; }
+    if (!name) { errors.push({ row: rowNum, message: "Nama kosong" }); return; }
+    if (!cls) { errors.push({ row: rowNum, message: "Kelas kosong" }); return; }
+
+    records.push({ nisn, name, class: cls });
+  });
+
+  if (isPreview) {
+    const supabase = createAdminClient();
+    const { data: existing } = await supabase
+      .from("students")
+      .select("nisn")
+      .in("nisn", records.map((r) => r.nisn));
+
+    const existingSet = new Set((existing ?? []).map((e) => e.nisn));
+    let added = 0, updated = 0;
+    for (const r of records) {
+      if (existingSet.has(r.nisn)) updated++; else added++;
+    }
+
+    return NextResponse.json({
+      total: records.length + errors.length,
+      valid: records.length,
+      errors,
+      preview: { added, updated },
+    });
+  }
 
   if (records.length === 0) {
     return NextResponse.json(
-      { error: "Tidak ada baris valid (butuh kolom NISN, Nama, Kelas)." },
+      { error: "Tidak ada data valid untuk diimport. Periksa kembali file Anda." },
       { status: 400 }
     );
   }
@@ -47,11 +85,9 @@ export async function POST(request: Request) {
     .in("nisn", records.map((r) => r.nisn));
   const existingSet = new Set((existing ?? []).map((e) => e.nisn));
 
-  let added = 0;
-  let updated = 0;
+  let added = 0, updated = 0;
   for (const r of records) {
-    if (existingSet.has(r.nisn)) updated++;
-    else added++;
+    if (existingSet.has(r.nisn)) updated++; else added++;
   }
 
   const { error } = await supabase
@@ -59,10 +95,7 @@ export async function POST(request: Request) {
     .upsert(records, { onConflict: "nisn" });
 
   if (error) {
-    return NextResponse.json(
-      { error: "Gagal import: " + error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Gagal import: " + error.message }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, added, updated });

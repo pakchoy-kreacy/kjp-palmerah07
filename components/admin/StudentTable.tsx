@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Download, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Upload, Search, FileSpreadsheet, Users as UsersIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -57,9 +57,12 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
   const columns = [
     columnHelper.accessor("name", {
       header: "Nama",
-      cell: (c) => <span className="font-medium">{c.getValue()}</span>,
+      cell: (c) => <span className="font-semibold text-gray-800">{c.getValue()}</span>,
     }),
-    columnHelper.accessor("nisn", { header: "NISN" }),
+    columnHelper.accessor("nisn", {
+      header: "NISN",
+      cell: (c) => <span className="font-mono text-gray-600">{c.getValue()}</span>,
+    }),
     columnHelper.accessor("class", { header: "Kelas" }),
     columnHelper.accessor("status", {
       header: "Status",
@@ -68,12 +71,14 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
     columnHelper.accessor("docCount", {
       header: "Dokumen",
       enableSorting: false,
-      cell: (c) => `${c.getValue()}/${c.row.original.docRequired}`,
+      cell: (c) => (
+        <span className="text-sm">{c.getValue()}/{c.row.original.docRequired}</span>
+      ),
     }),
     columnHelper.accessor("updatedAt", {
-      header: "Terakhir Update",
+      header: "Update",
       cell: (c) => (
-        <span className="text-muted-foreground">
+        <span className="text-sm text-gray-400">
           {relativeTime(c.getValue())}
         </span>
       ),
@@ -89,6 +94,7 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
             e.stopPropagation();
             setSelectedId(c.row.original.applicationId);
           }}
+          className="text-xs font-semibold"
         >
           Detail
         </Button>
@@ -132,6 +138,7 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
       a.download = "data-siswa-kjp.xlsx";
       a.click();
       URL.revokeObjectURL(url);
+      toast.success("Export berhasil");
     } catch {
       toast.error("Gagal export");
     }
@@ -140,17 +147,41 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
   const orderedIds = filtered.map((r) => r.applicationId);
   const selectedIndex = selectedId ? orderedIds.indexOf(selectedId) : -1;
 
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white py-16">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
+          <UsersIcon className="h-8 w-8 text-gray-300" />
+        </div>
+        <h3 className="mt-4 text-base font-bold text-gray-700">Belum ada data siswa</h3>
+        <p className="mt-1 text-sm text-gray-400">Silakan import data menggunakan Template Excel</p>
+        <div className="mt-6 flex gap-3">
+          <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+          <Button onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" /> Import Data
+          </Button>
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <Download className="h-4 w-4" /> Download Template
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Input
-          placeholder="Cari nama / NISN..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-xs"
-        />
+        <div className="relative max-w-xs flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder="Cari nama / NISN..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="pl-9"
+          />
+        </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -163,45 +194,41 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           </SelectContent>
         </Select>
         <Select value={classFilter} onValueChange={setClassFilter}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-[110px]">
             <SelectValue placeholder="Kelas" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Kelas</SelectItem>
             {classes.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
+              <SelectItem key={c} value={c}>{c}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" onClick={() => setImportOpen(true)}>
-            <Upload className="h-4 w-4" /> Import
+          <Button variant="outline" onClick={handleExport} className="gap-2">
+            <FileSpreadsheet className="h-4 w-4" /> Export Excel
           </Button>
-          <Button onClick={handleExport}>
-            <Download className="h-4 w-4" /> Export Excel
+          <Button onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" /> Import
           </Button>
         </div>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} className="border-gray-100 bg-gray-50/50">
                 {hg.headers.map((h) => (
                   <TableHead
                     key={h.id}
                     onClick={h.column.getToggleSortingHandler()}
-                    className={
+                    className={`text-xs font-bold uppercase tracking-wider text-gray-500 ${
                       h.column.getCanSort() ? "cursor-pointer select-none" : ""
-                    }
+                    }`}
                   >
                     {flexRender(h.column.columnDef.header, h.getContext())}
-                    {{ asc: " ▲", desc: " ▼" }[
-                      h.column.getIsSorted() as string
-                    ] ?? ""}
+                    {{ asc: " ▲", desc: " ▼" }[h.column.getIsSorted() as string] ?? ""}
                   </TableHead>
                 ))}
               </TableRow>
@@ -210,26 +237,20 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground"
-                >
-                  Tidak ada data.
+                <TableCell colSpan={columns.length} className="py-12 text-center text-sm text-gray-400">
+                  Tidak ada data yang cocok dengan pencarian.
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer"
+                  className="cursor-pointer border-gray-100 transition-colors hover:bg-gray-50"
                   onClick={() => setSelectedId(row.original.applicationId)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                    <TableCell key={cell.id} className="py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -240,7 +261,7 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm font-medium text-gray-500">
           {table.getFilteredRowModel().rows.length} siswa
         </span>
         <div className="flex items-center gap-2">
@@ -252,9 +273,8 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm">
-            {table.getState().pagination.pageIndex + 1} /{" "}
-            {table.getPageCount() || 1}
+          <span className="text-sm font-semibold text-gray-600">
+            {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
           </span>
           <Button
             variant="outline"

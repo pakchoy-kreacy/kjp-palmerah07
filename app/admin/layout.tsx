@@ -1,5 +1,5 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
 
 export default function AdminLayout({
   children,
@@ -7,18 +7,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4">
-          <span className="text-sm font-medium md:hidden text-primary">
-            KJP Plus
-          </span>
-          <div className="ml-auto">
-            <AdminLogoutButton />
-          </div>
-        </header>
-        <main className="flex-1 p-6">{children}</main>
+        <AdminNavbar />
+        <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>
   );
