@@ -1,9 +1,12 @@
+"use client";
+
 import { siteConfig } from "@/config/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/8 py-2.5 text-center text-[11px] text-white/35">
-      <p>{siteConfig.app.name} &middot; {siteConfig.school.name} &middot; v{siteConfig.app.version}</p>
+    <footer className="text-center text-[11px] text-gray-400">
+      <p>&copy; {new Date().getFullYear()} {siteConfig.school.name}</p>
+      <p className="mt-0.5 text-gray-300">v{siteConfig.app.version}</p>
     </footer>
   );
 }

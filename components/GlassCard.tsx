@@ -10,7 +10,7 @@ interface GlassCardProps {
 export function GlassCard({ children, className = "" }: GlassCardProps) {
   return (
     <div
-      className={`animate-scale-in w-full rounded-3xl border border-white/50 bg-white/80 p-4 shadow-xl shadow-black/10 backdrop-blur-[20px] ${className}`}
+      className={`w-full rounded-2xl border border-white/60 bg-white/90 p-5 shadow-xl shadow-black/15 backdrop-blur-lg ${className}`}
     >
       {children}
     </div>

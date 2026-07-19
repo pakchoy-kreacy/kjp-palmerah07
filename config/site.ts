@@ -28,7 +28,7 @@ export const siteConfig: SiteConfig = {
     whatsappNumber: "",
   },
   app: {
-    name: "Portal Pendaftaran KJP Plus",
+    name: "Portal Pendataan KJP Plus",
     version: "1.0.0",
   },
   links: {
@@ -36,7 +36,7 @@ export const siteConfig: SiteConfig = {
   },
   announcement: {
     enabled: true,
-    text: "📢 Pendaftaran dibuka tanggal 1 - 31 Juli 2025",
+    text: "Pendaftaran dibuka tanggal 1 - 31 Juli 2025",
   },
   appearance: {
     useSchoolBackground: true,
