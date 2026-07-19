@@ -18,7 +18,7 @@ export function LoginSelector({
       <div className="grid grid-cols-2 gap-2.5">
         <button
           onClick={onSelectParent}
-          className="group relative overflow-hidden rounded-xl border border-white/25 bg-white/12 px-3 py-4 text-center text-white shadow-lg shadow-black/10 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:border-white/50 hover:bg-white/20 hover:shadow-xl active:scale-[0.97]"
+          className="group relative overflow-hidden rounded-xl border border-red-400/20 bg-red-950/40 px-3 py-4 text-center text-white shadow-lg shadow-black/20 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:border-red-300/40 hover:bg-red-950/60 hover:shadow-xl active:scale-[0.97]"
         >
           <svg
             className="mx-auto mb-1.5 h-7 w-7 text-white/70 transition-colors group-hover:text-white"
@@ -43,7 +43,7 @@ export function LoginSelector({
 
         <button
           onClick={onSelectAdmin}
-          className="group relative overflow-hidden rounded-xl border border-white/15 bg-white/8 px-3 py-4 text-center text-white shadow-lg shadow-black/10 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:border-white/40 hover:bg-white/15 hover:shadow-xl active:scale-[0.97]"
+          className="group relative overflow-hidden rounded-xl border border-red-400/15 bg-red-950/30 px-3 py-4 text-center text-white shadow-lg shadow-black/20 backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:border-red-300/30 hover:bg-red-950/50 hover:shadow-xl active:scale-[0.97]"
         >
           <svg
             className="mx-auto mb-1.5 h-7 w-7 text-white/50 transition-colors group-hover:text-white"
