@@ -80,10 +80,10 @@ export function ParentForm() {
   const emergencyEnabled = new Set(EMERGENCY_FIELDS.map((f) => f.key));
 
   const STUDENT_OPTIONAL = new Set([
-    "npwp","phone_home","disability","identity_expiry","identity_permanent","mail_pickup","address_type","residence_status",
+    "npwp","phone_home","disability","identity_expiry","identity_permanent",
   ]);
   const GUARDIAN_OPTIONAL = new Set([
-    "npwp","phone_home","ktp_permanent","ktp_expiry","no_kk","birth_place","birth_date","mother_name","religion","marital_status","employment_status","residence_status","address_type","gender",
+    "npwp","phone_home","ktp_permanent","ktp_expiry","no_kk","birth_place","birth_date","mother_name","gender","address_type",
   ]);
   const EMERGENCY_OPTIONAL = new Set([
     "id_number","relationship","address","rt","rw","province","city","district","sub_district","postal_code",

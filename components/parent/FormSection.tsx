@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FieldConfig } from "@/lib/form-config";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +28,6 @@ const OPTIONAL: Record<string, Set<string>> = {
     "disability",
     "identity_expiry",
     "identity_permanent",
-    "mail_pickup",
-    "address_type",
-    "residence_status",
   ]),
   guardian: new Set([
     "npwp",
@@ -40,12 +38,8 @@ const OPTIONAL: Record<string, Set<string>> = {
     "birth_place",
     "birth_date",
     "mother_name",
-    "religion",
-    "marital_status",
-    "employment_status",
-    "residence_status",
-    "address_type",
     "gender",
+    "address_type",
   ]),
   emergency: new Set([
     "id_number",
@@ -72,6 +66,8 @@ function buildSchema(
     if (!enabled.has(f.key)) continue;
     if (f.type === "checkbox") {
       shape[f.key] = z.boolean().optional();
+    } else if (f.type === "checkboxes") {
+      shape[f.key] = z.string().optional();
     } else if (optionalSet?.has(f.key)) {
       shape[f.key] = z.string().optional();
     } else {
@@ -113,7 +109,6 @@ export function FormSection({
     mode: "onBlur",
   });
 
-  // Auto-save debounce 2 detik setelah berhenti mengetik
   const firstRender = React.useRef(true);
   React.useEffect(() => {
     const sub = watch((value) => {
@@ -145,6 +140,10 @@ export function FormSection({
     if (res.ok) toast.success("Draft tersimpan");
     else toast.error("Gagal menyimpan");
   };
+
+  const selectedValues = React.useCallback((val: string | undefined) => {
+    return new Set((val ?? "").split(",").filter(Boolean));
+  }, []);
 
   return (
     <section className="space-y-4 rounded-lg border bg-card p-4">
@@ -195,12 +194,12 @@ export function FormSection({
                     <RadioGroup
                       value={field.value ?? ""}
                       onValueChange={field.onChange}
-                      className="flex gap-4 pt-1"
+                      className="flex flex-wrap gap-x-4 gap-y-1 pt-1"
                     >
                       {f.options?.map((o) => (
                         <label
                           key={o.value}
-                          className="flex items-center gap-2 text-sm"
+                          className="flex items-center gap-2 text-sm cursor-pointer"
                         >
                           <RadioGroupItem value={o.value} />
                           {o.label}
@@ -221,6 +220,35 @@ export function FormSection({
                       />
                     </div>
                   )}
+                />
+              ) : f.type === "checkboxes" ? (
+                <Controller
+                  control={control}
+                  name={f.key}
+                  render={({ field }) => {
+                    const selected = selectedValues(field.value);
+                    return (
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1">
+                        {f.options?.map((o) => (
+                          <label
+                            key={o.value}
+                            className="flex items-center gap-2 text-sm cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={selected.has(o.value)}
+                              onCheckedChange={(checked) => {
+                                const next = new Set(selected);
+                                if (checked) next.add(o.value);
+                                else next.delete(o.value);
+                                field.onChange(Array.from(next).join(","));
+                              }}
+                            />
+                            {o.label}
+                          </label>
+                        ))}
+                      </div>
+                    );
+                  }}
                 />
               ) : (
                 <Input
