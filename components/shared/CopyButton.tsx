@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Copy } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function CopyButton({
@@ -33,15 +32,23 @@ export function CopyButton({
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="icon"
-      className={cn("h-8 w-8", className)}
       onClick={handleCopy}
-      aria-label="Salin"
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-all",
+        copied
+          ? "bg-green-50 text-green-600"
+          : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700",
+        className
+      )}
     >
-      <Copy className={cn("h-4 w-4", copied && "text-success")} />
-    </Button>
+      {copied ? (
+        <Check className="h-3 w-3" />
+      ) : (
+        <Copy className="h-3 w-3" />
+      )}
+      {copied ? "Tersalin" : "Salin"}
+    </button>
   );
 }

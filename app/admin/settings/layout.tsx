@@ -1,4 +1,5 @@
-import { SettingsNav } from "@/components/admin/settings/SettingsNav";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function SettingsLayout({
   children,
@@ -7,13 +8,13 @@ export default function SettingsLayout({
 }) {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Pengaturan</h1>
-      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-        <div className="border-b md:border-b-0 md:border-r md:pr-2">
-          <SettingsNav />
-        </div>
-        <div className="min-w-0">{children}</div>
-      </div>
+      <Link
+        href="/admin/settings"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Pengaturan
+      </Link>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

@@ -9,14 +9,12 @@ import {
   LayoutDashboard,
   Users,
   Settings,
-  GraduationCap,
-  Calendar,
-  FileText,
-  ClipboardList,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { AdminLayoutContext } from "./AdminShell";
 
 interface NavItem {
   href: string;
@@ -30,37 +28,9 @@ const NAV: NavItem[] = [
   { href: "/admin/settings", label: "Pengaturan", icon: Settings },
 ];
 
-const SETTINGS_SUB: NavItem[] = [
-  { href: "/admin/settings/school", label: "Profil Sekolah", icon: GraduationCap },
-  { href: "/admin/settings/period", label: "Periode", icon: Calendar },
-  { href: "/admin/settings/documents", label: "Jenis Dokumen", icon: FileText },
-  { href: "/admin/settings/form-fields", label: "Pengaturan Form", icon: ClipboardList },
-  { href: "/admin/settings/admins", label: "Manajemen Admin", icon: ShieldCheck },
-];
-
-function SidebarItem({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
-  const Icon = item.icon;
-  return (
-    <Link
-      href={item.href}
-      className={cn(
-        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
-        active
-          ? "bg-white/15 text-white shadow-sm"
-          : "text-white/60 hover:bg-white/8 hover:text-white/85",
-        collapsed && "justify-center px-2"
-      )}
-    >
-      <Icon className={cn("h-5 w-5 shrink-0", active ? "text-white" : "text-white/50 group-hover:text-white/80")} />
-      {!collapsed && <span>{item.label}</span>}
-    </Link>
-  );
-}
-
-export function AdminSidebar() {
+function SidebarContent({ collapsed }: { collapsed: boolean }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = React.useState(false);
-  const [schoolName, setSchoolName] = React.useState("KJP Plus");
+  const [schoolName, setSchoolName] = React.useState("SDN Palmerah 07 Pagi");
   const [logoUrl, setLogoUrl] = React.useState("");
 
   React.useEffect(() => {
@@ -73,64 +43,95 @@ export function AdminSidebar() {
     });
   }, []);
 
-  const inSettings = pathname.startsWith("/admin/settings") && pathname !== "/admin/settings";
-
   return (
-    <aside
-      className={cn(
-        "hidden md:flex flex-col border-r border-white/10 bg-gradient-to-b from-red-700 to-red-900 transition-all duration-300",
-        collapsed ? "w-16" : "w-60"
-      )}
-    >
-      <div className={cn("flex h-14 items-center border-b border-white/10 px-3", collapsed ? "justify-center" : "gap-3")}>
+    <div className="flex h-full flex-col bg-gradient-to-b from-red-700 to-red-950">
+      {/* Logo + Name */}
+      <div className={cn(
+        "flex h-16 items-center border-b border-white/10 shrink-0",
+        collapsed ? "justify-center px-2" : "gap-3 px-4"
+      )}>
         {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-white/20" />
+          <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white/20" />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white">
             K
           </div>
         )}
-        {!collapsed && <span className="truncate text-sm font-bold text-white">{schoolName}</span>}
-      </div>
-
-      <nav className={cn("flex-1 space-y-1 p-2", collapsed && "px-1")}>
-        {NAV.map((item) => (
-          <SidebarItem key={item.href} item={item} active={pathname === item.href || (item.href === "/admin/settings" && inSettings)} collapsed={collapsed} />
-        ))}
-
-        {inSettings && !collapsed && (
-          <div className="ml-2 mt-3 border-t border-white/10 pt-3">
-            <p className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wider text-white/35">Pengaturan</p>
-            <div className="space-y-0.5">
-              {SETTINGS_SUB.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200",
-                    pathname === item.href || pathname.startsWith(item.href + "/")
-                      ? "bg-white/15 text-white"
-                      : "text-white/50 hover:bg-white/8 hover:text-white/80"
-                  )}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+        {!collapsed && (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-white">Portal Pendataan</p>
+            <p className="truncate text-[10px] font-medium text-white/50">KJP Plus</p>
           </div>
         )}
+      </div>
+
+      {/* Nav */}
+      <nav className={cn("flex-1 space-y-1 py-3", collapsed ? "px-2" : "px-3")}>
+        {NAV.map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.href || (item.href === "/admin/settings" && pathname.startsWith("/admin/settings"));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "group flex items-center gap-3 rounded-xl transition-all duration-200",
+                active
+                  ? "bg-white/15 text-white shadow-sm"
+                  : "text-white/55 hover:bg-white/8 hover:text-white/85",
+                collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"
+              )}
+            >
+              <Icon className={cn("h-5 w-5 shrink-0", active ? "text-white" : "text-white/45 group-hover:text-white/75")} />
+              {!collapsed && <span className="text-sm font-semibold">{item.label}</span>}
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="border-t border-white/10 p-2">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-center rounded-lg py-2 text-white/40 transition-colors hover:bg-white/8 hover:text-white/70"
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-      </div>
-    </aside>
+      {/* School name + version */}
+      {!collapsed && (
+        <div className="border-t border-white/10 px-4 py-3">
+          <p className="text-[11px] font-medium text-white/35 truncate">{schoolName}</p>
+          <p className="text-[10px] text-white/25">v1.0.0</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AdminSidebar() {
+  const pathname = usePathname();
+  const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } =
+    React.useContext(AdminLayoutContext);
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden md:flex flex-col transition-all duration-300 ease-in-out",
+          collapsed ? "w-16" : "w-60"
+        )}
+      >
+        <SidebarContent collapsed={collapsed} />
+        {/* Collapse toggle */}
+        <div className="absolute bottom-4 -right-3 z-20 hidden lg:block">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm text-gray-400 hover:text-gray-600 hover:shadow transition-all"
+          >
+            {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile drawer */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="w-64 p-0">
+          <SidebarContent collapsed={false} />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

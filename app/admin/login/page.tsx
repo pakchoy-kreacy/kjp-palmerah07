@@ -59,11 +59,14 @@ export default function AdminLoginPage() {
             KJP
           </div>
 
-          <h1 className="mt-2.5 text-xl font-extrabold text-white tracking-tight">
+          <h1 className="mt-2 text-xl font-extrabold text-white tracking-tight">
             Login Admin
           </h1>
-          <p className="mt-0.5 text-xs font-semibold text-white/65">
-            Masuk ke panel admin sekolah
+          <p className="text-xs font-semibold text-white/65">
+            {siteConfig.app.name}
+          </p>
+          <p className="text-[10px] font-medium text-white/40">
+            {siteConfig.school.name}
           </p>
         </div>
 

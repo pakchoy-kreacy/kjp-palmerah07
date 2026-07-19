@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Download, Upload, Search, FileSpreadsheet, Users as UsersIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Upload, Search, FileSpreadsheet, Users, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -32,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StudentDrawer } from "@/components/admin/StudentDrawer";
 import { ImportDialog } from "@/components/admin/ImportDialog";
 import type { StudentRow } from "@/lib/admin-data";
@@ -61,9 +62,12 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
     }),
     columnHelper.accessor("nisn", {
       header: "NISN",
-      cell: (c) => <span className="font-mono text-gray-600">{c.getValue()}</span>,
+      cell: (c) => <span className="font-mono text-sm text-gray-600">{c.getValue()}</span>,
     }),
-    columnHelper.accessor("class", { header: "Kelas" }),
+    columnHelper.accessor("class", {
+      header: "Kelas",
+      cell: (c) => <span className="text-sm text-gray-600">{c.getValue()}</span>,
+    }),
     columnHelper.accessor("status", {
       header: "Status",
       cell: (c) => <StatusBadge status={c.getValue() as any} />,
@@ -72,7 +76,9 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
       header: "Dokumen",
       enableSorting: false,
       cell: (c) => (
-        <span className="text-sm">{c.getValue()}/{c.row.original.docRequired}</span>
+        <span className="text-sm text-gray-500">
+          {c.getValue()}/{c.row.original.docRequired}
+        </span>
       ),
     }),
     columnHelper.accessor("updatedAt", {
@@ -85,7 +91,7 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
     }),
     columnHelper.display({
       id: "aksi",
-      header: "Aksi",
+      header: "",
       cell: (c) => (
         <Button
           variant="outline"
@@ -147,14 +153,17 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
   const orderedIds = filtered.map((r) => r.applicationId);
   const selectedIndex = selectedId ? orderedIds.indexOf(selectedId) : -1;
 
+  // Empty state (no data at all)
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white py-16">
+      <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white py-20">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
-          <UsersIcon className="h-8 w-8 text-gray-300" />
+          <Users className="h-8 w-8 text-gray-300" />
         </div>
         <h3 className="mt-4 text-base font-bold text-gray-700">Belum ada data siswa</h3>
-        <p className="mt-1 text-sm text-gray-400">Silakan import data menggunakan Template Excel</p>
+        <p className="mt-1 text-sm text-gray-400 max-w-sm text-center">
+          Import data siswa menggunakan template Excel untuk memulai pendataan.
+        </p>
         <div className="mt-6 flex gap-3">
           <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
           <Button onClick={() => setImportOpen(true)} className="gap-2">
@@ -170,31 +179,32 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative max-w-xs flex-1">
+      {/* Search + Filters */}
+      <div className="flex flex-wrap items-center gap-2 sticky top-0 z-10 bg-gray-50/80 pb-2 backdrop-blur">
+        <div className="relative max-w-xs flex-1 min-w-[200px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Cari nama / NISN..."
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-9 text-sm"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[130px] h-9 text-xs">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Status</SelectItem>
-            <SelectItem value="not_started">Belum Mulai</SelectItem>
+            <SelectItem value="not_started">Belum Mengisi</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="submitted">Menunggu</SelectItem>
             <SelectItem value="needs_revision">Perlu Revisi</SelectItem>
-            <SelectItem value="verified">Terverifikasi</SelectItem>
+            <SelectItem value="verified">Lengkap</SelectItem>
           </SelectContent>
         </Select>
         <Select value={classFilter} onValueChange={setClassFilter}>
-          <SelectTrigger className="w-[110px]">
+          <SelectTrigger className="w-[110px] h-9 text-xs">
             <SelectValue placeholder="Kelas" />
           </SelectTrigger>
           <SelectContent>
@@ -205,15 +215,16 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           </SelectContent>
         </Select>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" onClick={handleExport} className="gap-2">
-            <FileSpreadsheet className="h-4 w-4" /> Export Excel
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
+            <FileSpreadsheet className="h-3.5 w-3.5" /> Export
           </Button>
-          <Button onClick={() => setImportOpen(true)} className="gap-2">
-            <Upload className="h-4 w-4" /> Import
+          <Button size="sm" onClick={() => setImportOpen(true)} className="gap-1.5 text-xs">
+            <Upload className="h-3.5 w-3.5" /> Import
           </Button>
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <Table>
           <TableHeader>
@@ -223,8 +234,8 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
                   <TableHead
                     key={h.id}
                     onClick={h.column.getToggleSortingHandler()}
-                    className={`text-xs font-bold uppercase tracking-wider text-gray-500 ${
-                      h.column.getCanSort() ? "cursor-pointer select-none" : ""
+                    className={`text-xs font-bold uppercase tracking-wider text-gray-500 py-3 ${
+                      h.column.getCanSort() ? "cursor-pointer select-none hover:text-gray-700" : ""
                     }`}
                   >
                     {flexRender(h.column.columnDef.header, h.getContext())}
@@ -237,8 +248,12 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="py-12 text-center text-sm text-gray-400">
-                  Tidak ada data yang cocok dengan pencarian.
+                <TableCell colSpan={columns.length} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <AlertCircle className="h-8 w-8 text-gray-200" />
+                    <p className="text-sm font-medium text-gray-400">Tidak ada data yang cocok</p>
+                    <p className="text-xs text-gray-400">Coba ubah filter pencarian</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -260,8 +275,9 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
         </Table>
       </div>
 
+      {/* Pagination */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-500">
+        <span className="text-xs font-medium text-gray-500">
           {table.getFilteredRowModel().rows.length} siswa
         </span>
         <div className="flex items-center gap-2">
@@ -273,7 +289,7 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-semibold text-gray-600">
+          <span className="text-xs font-semibold text-gray-600 min-w-[60px] text-center">
             {table.getState().pagination.pageIndex + 1} / {table.getPageCount() || 1}
           </span>
           <Button
