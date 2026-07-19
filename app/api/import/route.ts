@@ -103,12 +103,51 @@ export async function POST(request: Request) {
     if (existingSet.has(r.nisn)) updated++; else added++;
   }
 
-  const { error } = await supabase
+  const { error: upsertError } = await supabase
     .from("students")
     .upsert(records, { onConflict: "nisn" });
 
-  if (error) {
-    return NextResponse.json({ error: "Gagal import: " + error.message }, { status: 500 });
+  if (upsertError) {
+    return NextResponse.json({ error: "Gagal import: " + upsertError.message }, { status: 500 });
+  }
+
+  // Dapatkan active period
+  const { data: activePeriod } = await supabase
+    .from("periods")
+    .select("id")
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+
+  if (activePeriod) {
+    // Cari student IDs dari NISN
+    const { data: upsertedStudents } = await supabase
+      .from("students")
+      .select("id, nisn")
+      .in("nisn", records.map((r) => r.nisn));
+
+    const studentIds = (upsertedStudents ?? []).map((s) => s.id);
+
+    // Cek aplikasi yang sudah ada untuk periode ini
+    const { data: existingApps } = await supabase
+      .from("applications")
+      .select("student_id")
+      .in("student_id", studentIds)
+      .eq("period_id", activePeriod.id);
+
+    const existingStudentIds = new Set((existingApps ?? []).map((a) => a.student_id));
+    const newStudentIds = studentIds.filter((id) => !existingStudentIds.has(id));
+
+    // Buat aplikasi untuk siswa baru
+    if (newStudentIds.length > 0) {
+      const { error: appError } = await supabase
+        .from("applications")
+        .insert(newStudentIds.map((student_id) => ({ student_id, period_id: activePeriod.id })));
+
+      if (appError) {
+        return NextResponse.json({ error: "Gagal membuat aplikasi: " + appError.message }, { status: 500 });
+      }
+    }
   }
 
   return NextResponse.json({ ok: true, added, updated });

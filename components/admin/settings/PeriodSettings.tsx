@@ -22,6 +22,8 @@ export function PeriodSettings() {
   const [year, setYear] = React.useState("");
   const [label, setLabel] = React.useState("");
   const [loading, setLoading] = React.useState(true);
+  const [statusOpen, setStatusOpen] = React.useState(true);
+  const [statusLoading, setStatusLoading] = React.useState(true);
 
   const load = React.useCallback(() => {
     const supabase = createClient();
@@ -36,6 +38,32 @@ export function PeriodSettings() {
   }, []);
 
   React.useEffect(() => load(), [load]);
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "registration_status")
+      .maybeSingle()
+      .then(({ data }) => {
+        setStatusOpen((data?.value as any)?.value !== "CLOSED");
+        setStatusLoading(false);
+      });
+  }, []);
+
+  async function toggleStatus(val: boolean) {
+    setStatusOpen(val);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert(
+        { key: "registration_status", value: { value: val ? "OPEN" : "CLOSED" } },
+        { onConflict: "key" }
+      );
+    if (error) toast.error(error.message);
+    else toast.success(val ? "Pendataan dibuka" : "Pendataan ditutup");
+  }
 
   async function add() {
     if (!year.trim()) return;
@@ -68,6 +96,7 @@ export function PeriodSettings() {
   if (loading) return <div className="space-y-3"><Skeleton className="h-5 w-40" /><Skeleton className="h-48 w-full rounded-xl" /></div>;
 
   return (
+    <div className="space-y-4">
     <Card>
       <CardHeader>
         <CardTitle>Periode</CardTitle>
@@ -118,5 +147,27 @@ export function PeriodSettings() {
         </div>
       </CardContent>
     </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Status Pendataan</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {statusLoading ? (
+          <Skeleton className="h-10 w-full" />
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">{statusOpen ? "OPEN" : "CLOSED"}</p>
+              <p className="text-sm text-muted-foreground">
+                {statusOpen ? "Orang tua dapat mengisi formulir." : "Landing page menampilkan pesan penutupan."}
+              </p>
+            </div>
+            <Switch checked={statusOpen} onCheckedChange={toggleStatus} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+    </div>
   );
 }

@@ -1,17 +1,16 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertCircle, X } from "lucide-react";
 
 export function ImportDialog({
   open,
@@ -20,11 +19,14 @@ export function ImportDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
+  const router = useRouter();
   const [file, setFile] = React.useState<File | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [preview, setPreview] = React.useState<{
     total: number;
     valid: number;
+    added: number;
+    updated: number;
     errors: { row: number; message: string }[];
   } | null>(null);
   const [result, setResult] = React.useState<string | null>(null);
@@ -69,6 +71,8 @@ export function ImportDialog({
       setPreview({
         total: json.total ?? 0,
         valid: json.valid ?? 0,
+        added: json.preview?.added ?? 0,
+        updated: json.preview?.updated ?? 0,
         errors: json.errors ?? [],
       });
     } catch {
@@ -92,7 +96,8 @@ export function ImportDialog({
       }
       setResult(`${json.added} data ditambahkan, ${json.updated} data diperbarui`);
       setPreview(null);
-      toast.success("Import selesai");
+      toast.success("Import berhasil");
+      router.refresh();
     } catch {
       toast.error("Gagal import");
     } finally {
@@ -100,32 +105,31 @@ export function ImportDialog({
     }
   }
 
+  function reset() {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) { setFile(null); setPreview(null); setResult(null); } }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <FileSpreadsheet className="h-5 w-5 text-green-600" /> Import Data Siswa
-            </DialogTitle>
-            <button onClick={() => onOpenChange(false)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <DialogDescription>
-            Unggah file Excel untuk menambahkan atau memperbarui data siswa.
-          </DialogDescription>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <FileSpreadsheet className="h-5 w-5 text-green-600" /> Import Data Siswa
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
-          <Button variant="outline" onClick={downloadTemplate} size="sm" className="w-full gap-2 text-xs">
-            <Download className="h-3.5 w-3.5" /> Download Template Excel
+          <Button variant="outline" onClick={downloadTemplate} size="sm" className="w-full gap-2 text-xs justify-center">
+            <FileSpreadsheet className="h-4 w-4 text-green-600" /> Download Template Excel
           </Button>
 
           <div
-            className={`relative rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
+            className={`relative rounded-xl border-2 border-dashed transition-colors flex items-center justify-center ${
               dragOver ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50"
             }`}
+            style={{ minHeight: "130px" }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFileSelect(e.dataTransfer.files[0]); }}
@@ -136,11 +140,13 @@ export function ImportDialog({
               onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
               className="absolute inset-0 cursor-pointer opacity-0"
             />
-            <Upload className="mx-auto h-6 w-6 text-gray-300" />
-            <p className="mt-1.5 text-sm font-semibold text-gray-600">
-              {file ? file.name : "Klik atau drag & drop file"}
-            </p>
-            <p className="text-xs text-gray-400">Format: XLSX, XLS, CSV</p>
+            <div className="text-center">
+              <Upload className="mx-auto h-5 w-5 text-gray-300" />
+              <p className="mt-1 text-sm font-semibold text-gray-600">
+                {file ? file.name : "Klik atau drag & drop file"}
+              </p>
+              <p className="text-xs text-gray-400">Format: XLSX, XLS, CSV</p>
+            </div>
           </div>
 
           {file && !preview && !result && (
@@ -149,41 +155,55 @@ export function ImportDialog({
             </Button>
           )}
 
-          {preview && (
-            <div className="rounded-lg border p-3 space-y-2">
+          {preview && preview.errors.length === 0 && (
+            <div className="rounded-lg border border-green-100 bg-green-50 p-4 space-y-2">
+              <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
+                <CheckCircle2 className="h-5 w-5" /> Import Siap Diproses
+              </div>
+              <div className="text-sm text-green-600 space-y-0.5">
+                <p>{preview.added} Data Baru</p>
+                <p>{preview.updated} Data Diperbarui</p>
+              </div>
+              <Button onClick={handleImport} disabled={loading || preview.valid === 0} size="sm" className="mt-2 gap-1.5 text-xs">
+                {loading ? "Mengimport..." : "Konfirmasi Import"}
+              </Button>
+            </div>
+          )}
+
+          {preview && preview.errors.length > 0 && (
+            <div className="rounded-lg border border-gray-200 p-4 space-y-2">
               <div className="flex items-center gap-3 text-sm">
                 <span className="font-semibold text-gray-600">Total: {preview.total}</span>
                 <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700">
                   <CheckCircle2 className="h-3.5 w-3.5" /> {preview.valid} Valid
                 </span>
-                {preview.errors.length > 0 && (
-                  <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
-                    <AlertCircle className="h-3.5 w-3.5" /> {preview.errors.length} Error
-                  </span>
-                )}
+                <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
+                  <AlertCircle className="h-3.5 w-3.5" /> {preview.errors.length} Error
+                </span>
               </div>
-              {preview.errors.length > 0 && (
-                <div className="rounded-lg bg-red-50/50 border border-red-100 p-2 space-y-0.5">
-                  <p className="text-[11px] font-semibold text-red-700 mb-1">Baris bermasalah:</p>
-                  {preview.errors.map((e, i) => (
-                    <p key={i} className="text-[11px] text-red-600">Baris {e.row}: {e.message}</p>
-                  ))}
-                </div>
+              <div className="space-y-1">
+                {preview.errors.map((e, i) => (
+                  <div key={i} className="flex items-start gap-1.5 rounded-md bg-red-50 border border-red-100 px-3 py-2">
+                    <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
+                    <div className="text-xs text-red-700">
+                      <span className="font-semibold">Baris {e.row}</span> — {e.message}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {preview.valid > 0 && (
+                <Button onClick={handleImport} disabled={loading} size="sm" className="mt-2 gap-1.5 text-xs">
+                  {loading ? "Mengimport..." : "Import data valid"}
+                </Button>
               )}
-              <div className="flex gap-2 pt-1">
-                <Button onClick={handleImport} disabled={loading || preview.valid === 0} size="sm" className="flex-1 gap-1.5 text-xs">
-                  {loading ? "Mengimport..." : "Konfirmasi Import"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { setPreview(null); setFile(null); }} className="gap-1 text-xs">
-                  <X className="h-3.5 w-3.5" /> Batal
-                </Button>
-              </div>
             </div>
           )}
 
           {result && (
-            <div className="rounded-lg border border-green-100 bg-green-50 p-3 text-sm font-semibold text-green-700">
-              <CheckCircle2 className="inline h-4 w-4 mr-1" /> {result}
+            <div className="rounded-lg border border-green-100 bg-green-50 p-4">
+              <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
+                <CheckCircle2 className="h-5 w-5" /> {result}
+              </div>
             </div>
           )}
         </div>

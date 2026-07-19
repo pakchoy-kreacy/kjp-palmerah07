@@ -21,6 +21,7 @@ export function DocumentTypesSettings() {
   const [types, setTypes] = React.useState<any[]>([]);
   const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
 
   const load = React.useCallback(() => {
     const supabase = createClient();
@@ -37,7 +38,8 @@ export function DocumentTypesSettings() {
   React.useEffect(() => load(), [load]);
 
   async function add() {
-    if (!name.trim()) return;
+    if (!name.trim()) { toast.error("Nama dokumen tidak boleh kosong"); return; }
+    setSaving(true);
     const supabase = createClient();
     const max =
       types.reduce((m, t) => Math.max(m, t.sort_order), 0) ?? 0;
@@ -50,6 +52,7 @@ export function DocumentTypesSettings() {
       setName("");
       load();
     }
+    setSaving(false);
   }
 
   async function update(id: string, patch: any) {
@@ -98,8 +101,8 @@ export function DocumentTypesSettings() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Nama dokumen baru"
           />
-          <Button onClick={add}>
-            <Plus className="h-4 w-4" /> Tambah
+          <Button onClick={add} disabled={saving}>
+            {saving ? "Menambah..." : <><Plus className="h-4 w-4" /> Tambah</>}
           </Button>
         </div>
 

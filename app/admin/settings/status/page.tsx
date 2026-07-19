@@ -1,4 +1,5 @@
-import { StatusSettings } from "@/components/admin/settings/StatusSettings";
+import { redirect } from "next/navigation";
+
 export default function Page() {
-  return <StatusSettings />;
+  redirect("/admin/settings/period");
 }

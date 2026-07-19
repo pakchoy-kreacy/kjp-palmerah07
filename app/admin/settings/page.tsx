@@ -5,17 +5,15 @@ import {
   FileText,
   ClipboardList,
   ShieldCheck,
-  BookOpen,
   Palette,
 } from "lucide-react";
 
 const MENU = [
   { href: "/admin/settings/school", label: "Profil Sekolah", desc: "Logo, nama, alamat, kontak sekolah", icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50" },
   { href: "/admin/settings/identity", label: "Identitas Aplikasi", desc: "Nama aplikasi, favicon, warna, footer", icon: Palette, color: "text-purple-600", bg: "bg-purple-50" },
-  { href: "/admin/settings/period", label: "Periode", desc: "Tahun ajaran aktif pendataan", icon: Calendar, color: "text-orange-600", bg: "bg-orange-50" },
+  { href: "/admin/settings/period", label: "Periode & Status", desc: "Tahun ajaran aktif dan buka/tutup pendaftaran", icon: Calendar, color: "text-orange-600", bg: "bg-orange-50" },
   { href: "/admin/settings/documents", label: "Jenis Dokumen", desc: "Daftar dokumen yang wajib diunggah", icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
-  { href: "/admin/settings/form-fields", label: "Pengaturan Form", desc: "Aktif/nonaktifkan field formulir", icon: ClipboardList, color: "text-cyan-600", bg: "bg-cyan-50" },
-  { href: "/admin/settings/status", label: "Status Pendataan", desc: "Buka/tutup pendaftaran", icon: BookOpen, color: "text-indigo-600", bg: "bg-indigo-50" },
+  { href: "/admin/settings/form-fields", label: "Pengaturan Form", desc: "Aktif/nonaktifkan, tambah/hapus field formulir", icon: ClipboardList, color: "text-cyan-600", bg: "bg-cyan-50" },
   { href: "/admin/settings/admins", label: "Manajemen Admin", desc: "Tambah/hapus admin sekolah", icon: ShieldCheck, color: "text-red-600", bg: "bg-red-50" },
 ];
 

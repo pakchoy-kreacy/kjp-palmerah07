@@ -18,8 +18,6 @@ export function SchoolSettings() {
     address: "",
     whatsapp: "",
     logo_url: "",
-    bg_url: "",
-    nisn_check_url: "",
   });
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -36,9 +34,8 @@ export function SchoolSettings() {
         .limit(1)
         .maybeSingle();
       if (active && data) {
-        setForm(data as any);
+        setForm({ id: data.id, name: data.name ?? "", address: data.address ?? "", whatsapp: data.whatsapp ?? "", logo_url: data.logo_url ?? "" });
         if (data.logo_url) setLogoPreview(data.logo_url);
-        if ((data as any).bg_url) setBgPreview((data as any).bg_url);
       }
       if (active) setLoading(false);
     })();
@@ -107,8 +104,6 @@ export function SchoolSettings() {
       address: form.address,
       whatsapp: form.whatsapp,
       logo_url: form.logo_url,
-      bg_url: form.bg_url,
-      nisn_check_url: form.nisn_check_url,
     };
     let res;
     if (form.id) {
@@ -119,7 +114,10 @@ export function SchoolSettings() {
     if (res.error) toast.error("Gagal menyimpan");
     else {
       toast.success("Profil sekolah tersimpan");
-      if (!form.id && res.data) setForm((f) => ({ ...f, id: (res.data as any).id }));
+      if (!form.id && res.data) {
+        const d: any = res.data;
+        setForm((f) => ({ ...f, id: Array.isArray(d) ? d[0]?.id : d.id }));
+      }
     }
     setSaving(false);
   }
