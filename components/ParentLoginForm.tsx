@@ -38,7 +38,7 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
       const json = await res.json();
       if (!res.ok) { setError(json.error ?? "NISN tidak ditemukan."); return; }
       toast.success("Berhasil masuk");
-      router.push("/form");
+      router.push("/dashboard");
       router.refresh();
     } catch {
       setError("Terjadi kesalahan. Coba lagi.");

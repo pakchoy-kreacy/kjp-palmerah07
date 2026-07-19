@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Check, MessageSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, MessageSquare, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -128,7 +128,7 @@ export function StudentDrawer({
 
   return (
     <Sheet open={!!applicationId} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="w-full sm:max-w-[480px] p-0">
+      <SheetContent className="flex flex-col w-full sm:max-w-[70vw] p-0">
         {loading || !detail ? (
           <div className="space-y-3 p-6">
             <div className="h-6 w-40 animate-pulse rounded bg-muted" />
@@ -137,9 +137,10 @@ export function StudentDrawer({
           </div>
         ) : (
           <>
-            <SheetHeader className="border-b">
-              <div className="flex items-start justify-between pr-8">
-                <div>
+            {/* Header */}
+            <SheetHeader className="border-b px-6 py-4 shrink-0">
+              <div className="flex items-start justify-between">
+                <div className="min-w-0">
                   <SheetTitle>{student?.name}</SheetTitle>
                   <SheetDescription>
                     Kelas {student?.class} ·{" "}
@@ -150,28 +151,14 @@ export function StudentDrawer({
                     {relativeTime(detail.application?.updated_at)}
                   </p>
                 </div>
-              </div>
-              <div className="flex justify-between pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goPrev}
-                  disabled={index <= 0}
-                >
-                  <ChevronLeft className="h-4 w-4" /> Sebelumnya
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goNext}
-                  disabled={index >= orderedIds.length - 1}
-                >
-                  Berikutnya <ChevronRight className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={onClose}>
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </SheetHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
               <Tabs defaultValue="form">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="form">Form</TabsTrigger>
@@ -197,7 +184,34 @@ export function StudentDrawer({
               </Tabs>
             </div>
 
-            <div className="border-t p-4">
+            {/* Sticky footer with prev/next + actions */}
+            <div className="shrink-0 border-t bg-white px-6 py-3">
+              {/* Navigation */}
+              <div className="flex items-center justify-between mb-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goPrev}
+                  disabled={index <= 0}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Sebelumnya
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  {index + 1} / {orderedIds.length}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goNext}
+                  disabled={index >= orderedIds.length - 1}
+                  className="gap-1"
+                >
+                  Berikutnya <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Actions */}
               {status === "submitted" && (
                 <div className="flex gap-2">
                   <Button
@@ -218,12 +232,12 @@ export function StudentDrawer({
                 </div>
               )}
               {status === "needs_revision" && (
-                <p className="text-center text-sm text-warning">
+                <p className="text-center text-sm text-amber-600 font-medium">
                   Menunggu perbaikan dari orang tua
                 </p>
               )}
               {status === "verified" && (
-                <p className="text-center text-sm text-success">
+                <p className="text-center text-sm text-green-600 font-medium">
                   Terverifikasi ✓
                 </p>
               )}

@@ -3,10 +3,14 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useApplication } from "@/hooks/useApplication";
+import {
+  ChevronLeft, ChevronRight, Send, FileText, Users, Phone,
+  Upload, Eye, CheckCircle2, AlertCircle, Loader2
+} from "lucide-react";
+import { useApplication, ApplicationPayload } from "@/hooks/useApplication";
 import { FormSection } from "@/components/parent/FormSection";
 import { DocumentUpload } from "@/components/parent/DocumentUpload";
-import { Progress } from "@/components/ui/progress";
+import { Stepper } from "@/components/parent/Stepper";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -14,55 +18,44 @@ import {
   GUARDIAN_FIELDS,
   EMERGENCY_FIELDS,
 } from "@/lib/form-config";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { cn, formatBytes } from "@/lib/utils";
 
-function buildEnabled(
-  fields: { key: string }[],
-  formFields: { field_key: string; section: string; is_enabled: boolean }[],
-  section: "student" | "guardian"
-): Set<string> {
-  const prefix = section === "student" ? "student_" : "guardian_";
-  return new Set(
-    fields
-      .map((f) => f.key)
-      .filter((k) => {
-        const setting = formFields.find(
-          (s) => s.field_key === prefix + k && s.section === section
-        );
-        return !setting || setting.is_enabled;
-      })
-  );
-}
+type Step = "student" | "guardian" | "emergency" | "documents" | "review";
+
+const STEPS: { key: Step; number: number; label: string; icon: React.ElementType }[] = [
+  { key: "student", number: 1, label: "Data Siswa", icon: FileText },
+  { key: "guardian", number: 2, label: "Data Wali", icon: Users },
+  { key: "emergency", number: 3, label: "Kontak Darurat", icon: Phone },
+  { key: "documents", number: 4, label: "Upload Dokumen", icon: Upload },
+  { key: "review", number: 5, label: "Review & Kirim", icon: Eye },
+];
+
+const STEP_INDEX: Record<Step, number> = { student: 0, guardian: 1, emergency: 2, documents: 3, review: 4 };
 
 function countFilled(
   data: Record<string, any> | null,
-  fields: { key: string }[],
-  enabled: Set<string>,
   optional: Set<string>
 ) {
   if (!data) return { done: 0, total: 0 };
+  const keys = Object.keys(data);
   let done = 0;
   let total = 0;
-  for (const f of fields) {
-    if (!enabled.has(f.key)) continue;
-    if (optional.has(f.key)) continue;
+  for (const k of keys) {
+    if (optional.has(k)) continue;
     total++;
-    const v = data[f.key];
-    if (v !== null && v !== undefined && v !== "") done++;
+    const v = data[k];
+    if (v !== null && v !== undefined && v !== "" && v !== false) done++;
   }
   return { done, total };
 }
 
-const STUDENT_OPTIONAL = new Set([
-  "npwp","phone_home","disability","identity_expiry","identity_permanent","mail_pickup","address_type","residence_status",
-]);
-const GUARDIAN_OPTIONAL = new Set([
-  "npwp","phone_home","ktp_permanent","ktp_expiry","no_kk","birth_place","birth_date","mother_name","religion","marital_status","employment_status","residence_status","address_type","gender",
-]);
-
 export function ParentForm() {
   const router = useRouter();
-  const { data, isLoading } = useApplication();
+  const { data, isLoading, refetch } = useApplication();
   const [submitting, setSubmitting] = React.useState(false);
+  const [currentStep, setCurrentStep] = React.useState<Step>("student");
+  const [saving, setSaving] = React.useState<Step | null>(null);
 
   if (isLoading) {
     return (
@@ -80,27 +73,86 @@ export function ParentForm() {
 
   const { application, studentData, guardianData, emergencyContact, formFields, documentTypes, documents } = data;
   const status = application?.status as string;
-
-  // Lock form jika sudah submit/verified (kecuali saat revisi)
   const locked = status === "submitted" || status === "verified";
 
-  const studentEnabled = buildEnabled(STUDENT_FIELDS, formFields, "student");
-  const guardianEnabled = buildEnabled(GUARDIAN_FIELDS, formFields, "guardian");
+  const studentEnabled = new Set(STUDENT_FIELDS.map((f) => f.key));
+  const guardianEnabled = new Set(GUARDIAN_FIELDS.map((f) => f.key));
   const emergencyEnabled = new Set(EMERGENCY_FIELDS.map((f) => f.key));
 
-  const s = countFilled(studentData, STUDENT_FIELDS, studentEnabled, STUDENT_OPTIONAL);
-  const g = countFilled(guardianData, GUARDIAN_FIELDS, guardianEnabled, GUARDIAN_OPTIONAL);
-  const e = countFilled(emergencyContact, EMERGENCY_FIELDS, emergencyEnabled, new Set([
+  const STUDENT_OPTIONAL = new Set([
+    "npwp","phone_home","disability","identity_expiry","identity_permanent","mail_pickup","address_type","residence_status",
+  ]);
+  const GUARDIAN_OPTIONAL = new Set([
+    "npwp","phone_home","ktp_permanent","ktp_expiry","no_kk","birth_place","birth_date","mother_name","religion","marital_status","employment_status","residence_status","address_type","gender",
+  ]);
+  const EMERGENCY_OPTIONAL = new Set([
     "id_number","relationship","address","rt","rw","province","city","district","sub_district","postal_code",
-  ]));
+  ]);
+
+  const studentFilled = countFilled(studentData, STUDENT_OPTIONAL);
+  const guardianFilled = countFilled(guardianData, GUARDIAN_OPTIONAL);
+  const emergencyFilled = countFilled(emergencyContact, EMERGENCY_OPTIONAL);
 
   const requiredDocs = documentTypes.filter((d: any) => d.is_required);
   const uploadedIds = new Set(documents.map((d: any) => d.document_type_id));
   const missingDocs = requiredDocs.filter((d: any) => !uploadedIds.has(d.id));
+  const docsComplete = missingDocs.length === 0;
 
-  const partsDone = [s.done === s.total && s.total > 0, g.done === g.total && g.total > 0, e.done === e.total && e.total > 0, missingDocs.length === 0 && requiredDocs.length > 0].filter(Boolean).length;
-  const totalParts = 4;
-  const pct = Math.round((partsDone / totalParts) * 100);
+  function getStepStatus(step: Step): "empty" | "partial" | "complete" {
+    if (step === "documents") {
+      if (requiredDocs.length === 0) return "complete";
+      return docsComplete ? "complete" : documents.length > 0 ? "partial" : "empty";
+    }
+    if (step === "review") return "complete";
+    const filled = { student: studentFilled, guardian: guardianFilled, emergency: emergencyFilled }[step];
+    if (!filled || filled.total === 0) return "empty";
+    if (filled.done === 0) return "empty";
+    if (filled.done < filled.total) return "partial";
+    return "complete";
+  }
+
+  const stepStatuses = {
+    student: getStepStatus("student"),
+    guardian: getStepStatus("guardian"),
+    emergency: getStepStatus("emergency"),
+    documents: getStepStatus("documents"),
+    review: getStepStatus("review"),
+  };
+
+  async function saveSection(section: Step) {
+    if (section === "documents" || section === "review") return;
+    setSaving(section);
+    try {
+      const dataToSave = {
+        student: studentData ?? {},
+        guardian: guardianData ?? {},
+        emergency: emergencyContact ?? {},
+      }[section];
+      const res = await fetch("/api/application", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section, data: dataToSave }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // silent fail
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function goNext() {
+    await saveSection(currentStep);
+    const idx = STEP_INDEX[currentStep];
+    const nextKey = STEPS[idx + 1]?.key;
+    if (nextKey) setCurrentStep(nextKey);
+  }
+
+  function goPrev() {
+    const idx = STEP_INDEX[currentStep];
+    const prevKey = STEPS[idx - 1]?.key;
+    if (prevKey) setCurrentStep(prevKey);
+  }
 
   async function handleSubmit() {
     if (missingDocs.length > 0) {
@@ -109,16 +161,14 @@ export function ParentForm() {
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/application/${application.id}/submit`, {
-        method: "POST",
-      });
+      const res = await fetch(`/api/application/${application.id}/submit`, { method: "POST" });
       const json = await res.json();
       if (!res.ok) {
         toast.error(json.error ?? "Gagal submit");
         return;
       }
-      toast.success("Pengajuan dikirim");
-      router.push("/status");
+      toast.success("Pengajuan berhasil dikirim!");
+      router.push("/success");
       router.refresh();
     } catch {
       toast.error("Gagal submit");
@@ -127,67 +177,213 @@ export function ParentForm() {
     }
   }
 
+  const currentIdx = STEP_INDEX[currentStep];
+  const isFirst = currentIdx === 0;
+  const isLast = currentIdx === STEPS.length - 1;
+
+  function ErrorSummary({ text }: { text: string }) {
+    return (
+      <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span className="text-xs font-medium">{text}</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 pb-28">
-      <div className="sticky top-0 z-10 -mx-4 border-b bg-background/95 px-4 py-3 backdrop-blur">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium">{application?.student?.name ?? "Siswa"}</span>
-          <span className="text-muted-foreground">
-            {partsDone} dari {totalParts} bagian selesai
-          </span>
+    <div className="flex flex-1 flex-col">
+      {/* Fixed top bar */}
+      <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-sm font-bold text-gray-800 truncate">{application?.student?.name ?? "Formulir"}</h1>
+          {locked && <StatusBadge status={status as any} />}
         </div>
-        <Progress value={pct} className="mt-2" />
+        <Stepper steps={STEPS.map((s) => ({ number: s.number, label: s.label }))} currentStep={STEP_INDEX[currentStep] + 1} />
       </div>
 
-      {locked && (
-        <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
-          Form sudah terkunci (status: {status}). Lihat status di halaman Status.
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-28">
+        <div className="mx-auto max-w-lg space-y-4">
+          {locked && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              Form sudah terkunci (status: {status}). Silakan lihat status di halaman Status.
+            </div>
+          )}
+
+          {/* Step 1: Student */}
+          {currentStep === "student" && (
+            <FormSection
+              title="I. Data Pribadi Siswa"
+              section="student"
+              fields={STUDENT_FIELDS}
+              enabledKeys={studentEnabled}
+              defaultValues={studentData ?? {}}
+            />
+          )}
+
+          {/* Step 2: Guardian */}
+          {currentStep === "guardian" && (
+            <FormSection
+              title="II. Data Wali"
+              section="guardian"
+              fields={GUARDIAN_FIELDS}
+              enabledKeys={guardianEnabled}
+              defaultValues={guardianData ?? {}}
+            />
+          )}
+
+          {/* Step 3: Emergency */}
+          {currentStep === "emergency" && (
+            <FormSection
+              title="III. Kontak Darurat"
+              section="emergency"
+              fields={EMERGENCY_FIELDS}
+              enabledKeys={emergencyEnabled}
+              defaultValues={emergencyContact ?? {}}
+            />
+          )}
+
+          {/* Step 4: Documents */}
+          {currentStep === "documents" && (
+            <section className="space-y-3 rounded-lg border bg-card p-4">
+              <h2 className="text-base font-semibold">IV. Upload Dokumen</h2>
+              <p className="text-xs text-muted-foreground">
+                Unggah dokumen yang diperlukan. Format: JPG, PNG, atau PDF (maks. 5MB per file).
+              </p>
+              <DocumentUpload documentTypes={documentTypes} documents={documents} />
+            </section>
+          )}
+
+          {/* Step 5: Review */}
+          {currentStep === "review" && (
+            <section className="space-y-4">
+              <h2 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Review & Kirim
+              </h2>
+
+              {/* Student Summary */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                  <FileText className="h-4 w-4 text-red-500" /> Data Siswa
+                </h3>
+                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                  {studentFilled.done > 0 ? (
+                    <p>{studentFilled.done}/{studentFilled.total} field terisi</p>
+                  ) : (
+                    <p className="text-amber-600 font-medium">Belum diisi</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Guardian Summary */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-blue-500" /> Data Wali
+                </h3>
+                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                  {guardianFilled.done > 0 ? (
+                    <p>{guardianFilled.done}/{guardianFilled.total} field terisi</p>
+                  ) : (
+                    <p className="text-gray-400">Tidak diisi (opsional)</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Emergency Summary */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                  <Phone className="h-4 w-4 text-purple-500" /> Kontak Darurat
+                </h3>
+                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                  {emergencyFilled.done > 0 ? (
+                    <p>{emergencyFilled.done}/{emergencyFilled.total} field terisi</p>
+                  ) : (
+                    <p className="text-gray-400">Tidak diisi (opsional)</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Documents Summary */}
+              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                  <Upload className="h-4 w-4 text-green-500" /> Dokumen
+                </h3>
+                <div className="mt-2 space-y-1 text-xs text-gray-600">
+                  {documentTypes.length > 0 ? (
+                    documentTypes.map((dt: any) => {
+                      const up = documents.find((d: any) => d.document_type_id === dt.id);
+                      return (
+                        <div key={dt.id} className="flex items-center justify-between py-0.5">
+                          <span className="flex items-center gap-1">
+                            {up ? (
+                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <AlertCircle className="h-3 w-3 text-amber-500" />
+                            )}
+                            {dt.name}
+                          </span>
+                          <span className="text-gray-400">{up ? up.file_name : "—"}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-400">Tidak ada dokumen yang diperlukan</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Errors */}
+              {missingDocs.length > 0 && (
+                <ErrorSummary text={`Dokumen wajib belum diupload: ${missingDocs.map((d: any) => d.name).join(", ")}`} />
+              )}
+              {studentFilled.done === 0 && (
+                <ErrorSummary text="Data siswa belum diisi. Silakan lengkapi terlebih dahulu." />
+              )}
+            </section>
+          )}
         </div>
-      )}
+      </div>
 
-      <FormSection
-        title="I. Data Pribadi Siswa"
-        section="student"
-        fields={STUDENT_FIELDS}
-        enabledKeys={studentEnabled}
-        defaultValues={studentData ?? {}}
-      />
-      <FormSection
-        title="II. Data Wali"
-        section="guardian"
-        fields={GUARDIAN_FIELDS}
-        enabledKeys={guardianEnabled}
-        defaultValues={guardianData ?? {}}
-      />
-      <FormSection
-        title="III. Kontak Darurat"
-        section="emergency"
-        fields={EMERGENCY_FIELDS}
-        enabledKeys={emergencyEnabled}
-        defaultValues={emergencyContact ?? {}}
-      />
-
-      <section className="space-y-3 rounded-lg border bg-card p-4">
-        <h2 className="text-base font-semibold">IV. Upload Dokumen</h2>
-        <DocumentUpload documentTypes={documentTypes} documents={documents} />
-      </section>
-
-      <div className="fixed inset-x-0 bottom-0 border-t bg-background px-4 py-3">
-        <div className="mx-auto flex max-w-md gap-2">
+      {/* Bottom nav */}
+      <div className="fixed inset-x-0 bottom-0 border-t bg-white px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
           <Button
             variant="outline"
-            className="flex-1"
-            onClick={() => router.push("/status")}
+            size="sm"
+            onClick={goPrev}
+            disabled={isFirst}
+            className="gap-1"
           >
-            Lihat Status
+            <ChevronLeft className="h-4 w-4" /> Sebelumnya
           </Button>
-          <Button
-            className="flex-1"
-            disabled={locked || submitting}
-            onClick={handleSubmit}
-          >
-            {submitting ? "Mengirim..." : "Submit"}
-          </Button>
+
+          <div className="text-xs text-gray-400 font-medium">
+            {currentIdx + 1} / {STEPS.length}
+          </div>
+
+          {isLast ? (
+            <Button
+              size="sm"
+              disabled={locked || submitting}
+              onClick={handleSubmit}
+              className="gap-1.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-md"
+            >
+              {submitting ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Mengirim...</>
+              ) : (
+                <><Send className="h-4 w-4" /> Kirim</>
+              )}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              onClick={goNext}
+              className="gap-1"
+            >
+              Selanjutnya <ChevronRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>
