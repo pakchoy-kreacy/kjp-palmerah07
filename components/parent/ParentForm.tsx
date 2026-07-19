@@ -134,6 +134,8 @@ export function ParentForm() {
         body: JSON.stringify({ section, data: dataToSave }),
       });
       if (!res.ok) throw new Error();
+      const label = { student: "Data siswa", guardian: "Data wali", emergency: "Kontak darurat" }[section];
+      toast.success(`${label} tersimpan`);
     } catch {
       toast.error(`Gagal menyimpan data ${section}`);
     } finally {
