@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Upload, Download, FileSpreadsheet, AlertCircle, CheckCircle2, X } from "lucide-react";
@@ -89,7 +90,7 @@ export function ImportDialog({
         toast.error(json.error ?? "Gagal import");
         return;
       }
-      setResult(`✅ ${json.added} data ditambahkan, ${json.updated} data diperbarui`);
+      setResult(`${json.added} data ditambahkan, ${json.updated} data diperbarui`);
       setPreview(null);
       toast.success("Import selesai");
     } catch {
@@ -101,23 +102,28 @@ export function ImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) { setFile(null); setPreview(null); setResult(null); } }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <FileSpreadsheet className="h-5 w-5 text-green-600" /> Import Data Siswa
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <FileSpreadsheet className="h-5 w-5 text-green-600" /> Import Data Siswa
+            </DialogTitle>
+            <button onClick={() => onOpenChange(false)} className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
           <DialogDescription>
             Unggah file Excel untuk menambahkan atau memperbarui data siswa.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <Button variant="outline" onClick={downloadTemplate} className="w-full gap-2">
-            <Download className="h-4 w-4" /> Download Template Excel
+        <div className="space-y-3">
+          <Button variant="outline" onClick={downloadTemplate} size="sm" className="w-full gap-2 text-xs">
+            <Download className="h-3.5 w-3.5" /> Download Template Excel
           </Button>
 
           <div
-            className={`relative rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+            className={`relative rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
               dragOver ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50"
             }`}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -130,55 +136,46 @@ export function ImportDialog({
               onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
               className="absolute inset-0 cursor-pointer opacity-0"
             />
-            <Upload className="mx-auto h-8 w-8 text-gray-300" />
-            <p className="mt-2 text-sm font-semibold text-gray-600">
-              {file ? file.name : "Klik atau drag & drop file di sini"}
+            <Upload className="mx-auto h-6 w-6 text-gray-300" />
+            <p className="mt-1.5 text-sm font-semibold text-gray-600">
+              {file ? file.name : "Klik atau drag & drop file"}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">Format: XLSX, XLS, CSV</p>
-          </div>
-
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-            <p className="text-xs font-bold text-blue-700">Petunjuk Pengisian</p>
-            <ul className="mt-1 space-y-0.5 text-[11px] text-blue-600/80">
-              <li>• Kolom wajib: NISN, Nama Lengkap, Kelas</li>
-              <li>• NISN harus unik (tidak boleh duplikat)</li>
-              <li>• Data akan ditambahkan atau diperbarui berdasarkan NISN</li>
-              <li>• Baris pertama harus berisi nama kolom (header)</li>
-            </ul>
+            <p className="text-xs text-gray-400">Format: XLSX, XLS, CSV</p>
           </div>
 
           {file && !preview && !result && (
-            <Button onClick={previewImport} disabled={loading} variant="secondary" className="w-full gap-2">
+            <Button onClick={previewImport} disabled={loading} variant="secondary" size="sm" className="w-full gap-2 text-xs">
               {loading ? "Membaca..." : "Pra-tinjau Data"}
             </Button>
           )}
 
           {preview && (
-            <div className="space-y-3 rounded-lg border p-3">
-              <div className="flex items-center gap-4 text-sm">
+            <div className="rounded-lg border p-3 space-y-2">
+              <div className="flex items-center gap-3 text-sm">
                 <span className="font-semibold text-gray-600">Total: {preview.total}</span>
-                <span className="flex items-center gap-1 font-semibold text-green-600">
-                  <CheckCircle2 className="h-4 w-4" /> {preview.valid} Valid
+                <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {preview.valid} Valid
                 </span>
                 {preview.errors.length > 0 && (
-                  <span className="flex items-center gap-1 font-semibold text-red-600">
-                    <AlertCircle className="h-4 w-4" /> {preview.errors.length} Error
+                  <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">
+                    <AlertCircle className="h-3.5 w-3.5" /> {preview.errors.length} Error
                   </span>
                 )}
               </div>
               {preview.errors.length > 0 && (
-                <div className="max-h-24 space-y-0.5 overflow-y-auto rounded bg-red-50 p-2 text-[11px] text-red-700">
+                <div className="rounded-lg bg-red-50/50 border border-red-100 p-2 space-y-0.5">
+                  <p className="text-[11px] font-semibold text-red-700 mb-1">Baris bermasalah:</p>
                   {preview.errors.map((e, i) => (
-                    <p key={i}>Baris {e.row}: {e.message}</p>
+                    <p key={i} className="text-[11px] text-red-600">Baris {e.row}: {e.message}</p>
                   ))}
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button onClick={handleImport} disabled={loading || preview.valid === 0} className="flex-1 gap-2">
+              <div className="flex gap-2 pt-1">
+                <Button onClick={handleImport} disabled={loading || preview.valid === 0} size="sm" className="flex-1 gap-1.5 text-xs">
                   {loading ? "Mengimport..." : "Konfirmasi Import"}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => { setPreview(null); setFile(null); }}>
-                  <X className="h-4 w-4" />
+                <Button variant="outline" size="sm" onClick={() => { setPreview(null); setFile(null); }} className="gap-1 text-xs">
+                  <X className="h-3.5 w-3.5" /> Batal
                 </Button>
               </div>
             </div>
@@ -186,7 +183,7 @@ export function ImportDialog({
 
           {result && (
             <div className="rounded-lg border border-green-100 bg-green-50 p-3 text-sm font-semibold text-green-700">
-              {result}
+              <CheckCircle2 className="inline h-4 w-4 mr-1" /> {result}
             </div>
           )}
         </div>

@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Download, Upload, Search, FileSpreadsheet, Users, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, Search, FileSpreadsheet, Users, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -32,7 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
 import { StudentDrawer } from "@/components/admin/StudentDrawer";
 import { ImportDialog } from "@/components/admin/ImportDialog";
 import type { StudentRow } from "@/lib/admin-data";
@@ -168,9 +167,6 @@ export function StudentTable({ initialRows }: { initialRows: StudentRow[] }) {
           <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
           <Button onClick={() => setImportOpen(true)} className="gap-2">
             <Upload className="h-4 w-4" /> Import Data
-          </Button>
-          <Button variant="outline" onClick={handleExport} className="gap-2">
-            <Download className="h-4 w-4" /> Download Template
           </Button>
         </div>
       </div>

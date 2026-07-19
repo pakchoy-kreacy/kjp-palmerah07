@@ -181,19 +181,6 @@ export function SchoolSettings() {
               <p className="text-[11px] text-gray-400">Gunakan format internasional tanpa + dan spasi. Contoh: 6281234567890. Nomor ini dipakai untuk tombol &quot;Hubungi Admin&quot; di halaman login orang tua.</p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
-                <Link className="h-3.5 w-3.5 text-blue-600" /> Link Cek NISN
-              </Label>
-              <Input
-                value={form.nisn_check_url}
-                onChange={(e) => updateField("nisn_check_url", e.target.value)}
-                placeholder="https://referensi.data.kemdikbud.go.id/..."
-                className="border-gray-200 text-sm"
-              />
-              <p className="text-[11px] text-gray-400">Jika dikosongkan, tombol &quot;Cek NISN&quot; tetap tampil tetapi nonaktif.</p>
-            </div>
-
             <div className="pt-2">
               <Button onClick={save} disabled={saving} className="gap-2">
                 <Save className="h-4 w-4" />

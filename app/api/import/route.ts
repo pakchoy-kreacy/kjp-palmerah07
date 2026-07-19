@@ -28,18 +28,31 @@ export async function POST(request: Request) {
   }
 
   const normalize = (h: string) => h.toLowerCase().replace(/[^a-z]/g, "");
+
+  const SYNONYMS: Record<string, string[]> = {
+    nisn: ["nisn", "n i s n", "nik"],
+    nama: ["nama", "namalengkap", "namasiswa", "fullname", "name", "namapesertadidik"],
+    kelas: ["kelas", "rombel", "klas", "class", "tingkat"],
+  };
+
   const findCol = (row: Record<string, any>, want: string) => {
-    const key = Object.keys(row).find((k) => normalize(k) === want);
-    return key ? row[key] : "";
+    const norm = normalize(want);
+    const synonyms = SYNONYMS[norm] ?? [norm];
+    const key = Object.keys(row).find((k) => synonyms.includes(normalize(k)));
+    if (key) {
+      const val = row[key];
+      return val !== null && val !== undefined ? String(val).trim() : "";
+    }
+    return "";
   };
 
   const errors: { row: number; message: string }[] = [];
   const records: { nisn: string; name: string; class: string }[] = [];
 
   raw.forEach((r, i) => {
-    const nisn = String(findCol(r, "nisn") ?? "").trim();
-    const name = String(findCol(r, "nama") ?? "").trim();
-    const cls = String(findCol(r, "kelas") ?? "").trim();
+    const nisn = findCol(r, "nisn");
+    const name = findCol(r, "nama");
+    const cls = findCol(r, "kelas");
     const rowNum = i + 2;
 
     if (!nisn) { errors.push({ row: rowNum, message: "NISN kosong" }); return; }

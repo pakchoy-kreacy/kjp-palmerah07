@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Users,
   Settings,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   X,
@@ -25,6 +26,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/students", label: "Data Siswa", icon: Users },
+  { href: "/admin/referensi", label: "Data Referensi", icon: BookOpen },
   { href: "/admin/settings", label: "Pengaturan", icon: Settings },
 ];
 
