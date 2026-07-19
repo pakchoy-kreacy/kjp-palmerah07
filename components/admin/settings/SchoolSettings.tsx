@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, Save, Image, Phone, Link, Building } from "lucide-react";
 
 export function SchoolSettings() {
@@ -129,7 +130,7 @@ export function SchoolSettings() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-red-200 border-t-red-600" /></div>;
+  if (loading) return <div className="space-y-4"><Skeleton className="h-6 w-48" /><Skeleton className="h-64 w-full rounded-xl" /></div>;
 
   return (
     <div className="space-y-6">

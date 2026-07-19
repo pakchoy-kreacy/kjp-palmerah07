@@ -47,7 +47,7 @@ export default async function DashboardPage() {
   const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const QUICK_ACTIONS = [
-    { href: "/admin/students", label: "Import Data", desc: "Upload file Excel siswa", icon: Upload, color: "text-blue-600", bg: "bg-blue-50" },
+    { href: "/admin/settings/import", label: "Import Data", desc: "Upload file Excel siswa", icon: Upload, color: "text-blue-600", bg: "bg-blue-50" },
     { href: "/api/export", label: "Export Data", desc: "Download semua data Excel", icon: Download, color: "text-green-600", bg: "bg-green-50", external: true },
     { href: "/api/export/template", label: "Download Template", desc: "Template Excel untuk import", icon: FileSpreadsheet, color: "text-emerald-600", bg: "bg-emerald-50", external: true },
     { href: "/admin/settings/period", label: "Tambah Periode", desc: "Atur tahun ajaran aktif", icon: CalendarPlus, color: "text-purple-600", bg: "bg-purple-50" },

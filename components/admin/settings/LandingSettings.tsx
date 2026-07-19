@@ -3,6 +3,7 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,7 +58,7 @@ export function LandingSettings() {
     setSaving(false);
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Memuat...</p>;
+  if (loading) return <div className="space-y-3"><Skeleton className="h-5 w-40" /><Skeleton className="h-64 w-full rounded-xl" /></div>;
 
   return (
     <Card>

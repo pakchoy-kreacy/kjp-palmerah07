@@ -151,6 +151,7 @@ export function DocumentUpload({
                     <input
                       type="file"
                       accept="image/*,application/pdf"
+                      capture="environment"
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];

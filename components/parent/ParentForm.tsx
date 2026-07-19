@@ -135,7 +135,7 @@ export function ParentForm() {
       });
       if (!res.ok) throw new Error();
     } catch {
-      // silent fail
+      toast.error(`Gagal menyimpan data ${section}`);
     } finally {
       setSaving(null);
     }

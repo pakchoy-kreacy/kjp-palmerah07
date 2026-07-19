@@ -127,7 +127,7 @@ export function FormSection({
           });
           if (res.ok) toast.success("Tersimpan otomatis");
         } catch {
-          // biarkan gagal diam-diam, tombol simpan manual tetap ada
+          toast.error("Gagal menyimpan otomatis");
         }
       }, 2000);
       return () => clearTimeout(t);

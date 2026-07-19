@@ -3,6 +3,7 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -37,7 +38,7 @@ export function StatusSettings() {
       toast.success(val ? "Pendataan dibuka" : "Pendataan ditutup");
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Memuat...</p>;
+  if (loading) return <div className="space-y-3"><Skeleton className="h-5 w-40" /><Skeleton className="h-32 w-full rounded-xl" /></div>;
 
   return (
     <Card>

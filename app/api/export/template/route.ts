@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Tidak autentikasi" }, { status: 401 });
+  }
   const wb = XLSX.utils.book_new();
 
   const headers = [

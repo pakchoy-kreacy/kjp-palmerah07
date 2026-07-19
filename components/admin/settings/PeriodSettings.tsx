@@ -3,6 +3,8 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +65,7 @@ export function PeriodSettings() {
     }
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Memuat...</p>;
+  if (loading) return <div className="space-y-3"><Skeleton className="h-5 w-40" /><Skeleton className="h-48 w-full rounded-xl" /></div>;
 
   return (
     <Card>
@@ -88,7 +90,7 @@ export function PeriodSettings() {
               placeholder="Tahun Anggaran 2026"
             />
           </div>
-          <Button onClick={add}>Tambah Periode</Button>
+          <Button onClick={add} className="gap-1.5"><Plus className="h-4 w-4" /> Tambah Periode</Button>
         </div>
 
         <div className="space-y-2">
