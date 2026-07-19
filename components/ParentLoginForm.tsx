@@ -25,15 +25,8 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!nisn.trim()) {
-      setError("Masukkan NISN siswa.");
-      return;
-    }
-    if (nisn.length !== 10) {
-      setError("NISN harus 10 digit angka.");
-      return;
-    }
+    if (!nisn.trim()) { setError("Masukkan NISN siswa."); return; }
+    if (nisn.length !== 10) { setError("NISN harus 10 digit angka."); return; }
 
     setLoading(true);
     try {
@@ -43,10 +36,7 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
         body: JSON.stringify({ nisn: nisn.trim() }),
       });
       const json = await res.json();
-      if (!res.ok) {
-        setError(json.error ?? "NISN tidak ditemukan.");
-        return;
-      }
+      if (!res.ok) { setError(json.error ?? "NISN tidak ditemukan."); return; }
       toast.success("Berhasil masuk");
       router.push("/form");
       router.refresh();
@@ -58,15 +48,9 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="animate-slide-up w-full space-y-3"
-    >
-      <div className="space-y-1.5">
-        <label
-          htmlFor="nisn"
-          className="block text-sm font-bold text-white/90 tracking-wide"
-        >
+    <form onSubmit={handleSubmit} className="w-full space-y-2.5">
+      <div className="space-y-1">
+        <label htmlFor="nisn" className="block text-xs font-bold text-white/80 tracking-wide">
           NISN
         </label>
         <input
@@ -79,64 +63,49 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
           value={nisn}
           onChange={handleNisnChange}
           maxLength={10}
-          className="h-11 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-sm font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
+          className="h-10 w-full rounded-xl border border-white/25 bg-white/18 px-3.5 text-sm font-semibold text-white placeholder-white/60 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/25 focus:ring-2 focus:ring-white/25"
         />
         {error && (
-          <p className="animate-fade-in text-sm font-bold text-red-300">
-            {error}
-          </p>
+          <p className="animate-fade-in text-xs font-bold text-red-300">{error}</p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-lg shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        className="group relative flex h-10 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-md shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-lg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-        <span className="relative text-sm">
-          {loading ? "Memproses..." : "Masuk"}
-        </span>
+        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+        <span className="relative text-sm">{loading ? "Memproses..." : "Masuk"}</span>
       </button>
 
-      <div className="space-y-1.5 text-center text-[13px] text-white/50">
-        <p className="font-semibold text-white/70">Lupa NISN anak Anda?</p>
+      <div className="space-y-1 text-center text-xs text-white/45">
+        <p className="font-semibold text-white/65">Lupa NISN anak Anda?</p>
         <p>
           {siteConfig.school.whatsappNumber ? (
-            <a
-              href={`https://wa.me/${siteConfig.school.whatsappNumber}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-yellow-300/90 hover:text-yellow-200 transition-colors"
-            >
+            <a href={`https://wa.me/${siteConfig.school.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
+              className="font-bold text-yellow-300/85 hover:text-yellow-200 transition-colors">
               Hubungi Admin Sekolah via WhatsApp
             </a>
           ) : (
-            <span className="text-white/40 font-medium">Hubungi Admin Sekolah via WhatsApp</span>
+            <span className="font-semibold text-white/40">Hubungi Admin Sekolah via WhatsApp</span>
           )}
         </p>
-        <p className="font-medium">atau</p>
+        <p className="font-semibold">atau</p>
         <p>
           {siteConfig.links.nisnCheckUrl ? (
-            <a
-              href={siteConfig.links.nisnCheckUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-yellow-300/90 hover:text-yellow-200 transition-colors"
-            >
+            <a href={siteConfig.links.nisnCheckUrl} target="_blank" rel="noopener noreferrer"
+              className="font-bold text-yellow-300/85 hover:text-yellow-200 transition-colors">
               Cek NISN di sini
             </a>
           ) : (
-            <span className="text-white/40 font-medium">Cek NISN di sini</span>
+            <span className="font-semibold text-white/40">Cek NISN di sini</span>
           )}
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="mx-auto block text-[13px] font-semibold text-white/40 transition-colors hover:text-white/70"
-      >
+      <button type="button" onClick={onBack}
+        className="mx-auto block text-xs font-bold text-white/35 transition-colors hover:text-white/60">
         &larr; Kembali
       </button>
     </form>

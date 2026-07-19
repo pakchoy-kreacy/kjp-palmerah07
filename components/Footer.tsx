@@ -2,14 +2,8 @@ import { siteConfig } from "@/config/site";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-white/10 py-4 text-center text-xs text-white/40">
-      <p>{siteConfig.app.name}</p>
-      <p className="mt-0.5">
-        {siteConfig.school.name} &middot; v{siteConfig.app.version}
-      </p>
-      <p className="mt-0.5">
-        &copy; {new Date().getFullYear()} Hak Cipta Dilindungi
-      </p>
+    <footer className="border-t border-white/8 py-2.5 text-center text-[11px] text-white/35">
+      <p>{siteConfig.app.name} &middot; {siteConfig.school.name} &middot; v{siteConfig.app.version}</p>
     </footer>
   );
 }
