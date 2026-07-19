@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
                 <div className="space-y-1.5">
                   <label
                     htmlFor="admin-email"
-                    className="block text-sm font-medium text-white/80"
+                    className="block text-sm font-bold text-white/90 tracking-wide"
                   >
                     Email
                   </label>
@@ -104,14 +104,14 @@ export default function AdminLoginPage() {
                       if (error) setError(null);
                     }}
                     required
-                    className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder-white/40 outline-none transition-all duration-200 focus:border-white/50 focus:bg-white/15 focus:ring-2 focus:ring-white/20"
+                    className="h-12 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-[15px] font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <label
                     htmlFor="admin-password"
-                    className="block text-sm font-medium text-white/80"
+                    className="block text-sm font-bold text-white/90 tracking-wide"
                   >
                     Password
                   </label>
@@ -126,23 +126,23 @@ export default function AdminLoginPage() {
                       if (error) setError(null);
                     }}
                     required
-                    className="h-12 w-full rounded-xl border border-white/20 bg-white/10 px-4 text-base text-white placeholder-white/40 outline-none transition-all duration-200 focus:border-white/50 focus:bg-white/15 focus:ring-2 focus:ring-white/20"
+                    className="h-12 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-[15px] font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
                   />
                 </div>
               </div>
 
               {error && (
-                <p className="animate-fade-in text-sm font-medium text-red-300">
+                <p className="animate-fade-in text-sm font-bold text-red-300">
                   {error}
                 </p>
               )}
 
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-white/60">
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-white/70">
                 <input
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/30 bg-white/10 text-red-600 focus:ring-red-500"
+                  className="h-4 w-4 rounded border-white/30 bg-white/15 text-red-600 focus:ring-red-500"
                 />
                 Ingat Saya
               </label>
@@ -150,10 +150,10 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative h-12 w-full overflow-hidden rounded-xl bg-white font-semibold text-red-700 shadow-lg shadow-black/20 transition-all duration-200 hover:bg-white/90 hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                className="group relative flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-lg shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <span className="relative">
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                <span className="relative text-[15px]">
                   {loading ? "Memproses..." : "Masuk"}
                 </span>
               </button>
