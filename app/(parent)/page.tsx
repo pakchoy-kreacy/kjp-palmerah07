@@ -36,13 +36,13 @@ export default function LandingPage() {
       {state === "loading" && <LoadingScreen onFinish={handleFinishLoading} />}
 
       <GradientBackground>
-        <main className="flex min-h-screen flex-1 flex-col items-center justify-center gap-6 px-5 py-8">
+        <main className="flex flex-1 flex-col items-center justify-center gap-3 px-5 py-4">
           <div className="animate-fade-in text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/logo.png"
               alt={siteConfig.school.name}
-              className="mx-auto h-20 w-20 rounded-full object-cover shadow-lg shadow-black/30"
+              className="mx-auto h-14 w-14 rounded-full object-cover shadow-lg shadow-black/30"
               onError={(e) => {
                 const target = e.currentTarget;
                 target.style.display = "none";
@@ -50,14 +50,14 @@ export default function LandingPage() {
                 if (fallback) fallback.style.display = "flex";
               }}
             />
-            <div className="mx-auto hidden h-20 w-20 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white shadow-lg">
+            <div className="mx-auto hidden h-14 w-14 items-center justify-center rounded-full bg-white/20 text-lg font-bold text-white shadow-lg">
               KJP
             </div>
 
-            <h1 className="mt-4 text-2xl font-bold text-white">
+            <h1 className="mt-2 text-lg font-bold text-white">
               {siteConfig.app.name}
             </h1>
-            <p className="mt-1 text-sm text-white/60">
+            <p className="mt-0.5 text-xs text-white/60">
               {siteConfig.school.name}
             </p>
           </div>

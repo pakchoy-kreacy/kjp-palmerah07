@@ -50,7 +50,7 @@ export function AdminLoginForm({ onBack }: { onBack: () => void }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="animate-slide-up w-full space-y-5"
+      className="animate-slide-up w-full space-y-3"
     >
       <div className="space-y-3">
         <div className="space-y-1.5">
@@ -71,7 +71,7 @@ export function AdminLoginForm({ onBack }: { onBack: () => void }) {
               if (error) setError(null);
             }}
             required
-            className="h-12 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-[15px] font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
+            className="h-11 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-sm font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
           />
         </div>
 
@@ -93,7 +93,7 @@ export function AdminLoginForm({ onBack }: { onBack: () => void }) {
               if (error) setError(null);
             }}
             required
-            className="h-12 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-[15px] font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
+            className="h-11 w-full rounded-xl border border-white/25 bg-white/15 px-4 text-sm font-semibold text-white placeholder-white/50 outline-none transition-all duration-200 focus:border-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/25"
           />
         </div>
       </div>
@@ -117,10 +117,10 @@ export function AdminLoginForm({ onBack }: { onBack: () => void }) {
       <button
         type="submit"
         disabled={loading}
-        className="group relative flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-lg shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-white to-white font-bold text-red-700 shadow-lg shadow-black/25 transition-all duration-200 hover:from-white/90 hover:to-white/90 hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-200/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-        <span className="relative text-[15px]">
+        <span className="relative text-sm">
           {loading ? "Memproses..." : "Masuk"}
         </span>
       </button>

@@ -57,7 +57,7 @@ export function GradientBackground({ children }: { children: React.ReactNode }) 
         }}
       />
 
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 flex min-h-screen flex-col">{children}</div>
     </div>
   );
 }
