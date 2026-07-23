@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getParentSession } from "@/lib/parent-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { GradientBackground } from "@/components/GradientBackground";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { LogoutButton } from "@/components/shared/LogoutButton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { siteConfig } from "@/config/site";
@@ -35,11 +36,10 @@ export default async function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
+            <SafeImage
               src="/assets/logo.png"
               alt={siteConfig.school.name}
               className="h-10 w-10 rounded-full object-cover shadow-md"
-              onError={(e) => { (e.currentTarget).style.display = "none"; }}
             />
             <div>
               <h1 className="text-sm font-bold text-white">{siteConfig.app.name}</h1>

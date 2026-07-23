@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { siteConfig } from "@/config/site";
 import { GradientBackground } from "@/components/GradientBackground";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { GlassCard } from "@/components/GlassCard";
 import { Footer } from "@/components/Footer";
 
@@ -44,20 +45,16 @@ export default function AdminLoginPage() {
     <GradientBackground>
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-3">
         <div className="animate-fade-in text-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <SafeImage
             src="/assets/logo.png"
             alt={siteConfig.school.name}
             className="mx-auto h-16 w-16 rounded-full object-cover shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            onError={(e) => {
-              (e.currentTarget).style.display = "none";
-              const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-              if (fb) fb.style.display = "flex";
-            }}
+            fallback={
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white shadow-lg">
+                KJP
+              </div>
+            }
           />
-          <div className="mx-auto hidden h-16 w-16 items-center justify-center rounded-full bg-white/20 text-xl font-bold text-white shadow-lg">
-            KJP
-          </div>
 
           <h1 className="mt-2 text-xl font-extrabold text-white tracking-tight">
             Login Admin

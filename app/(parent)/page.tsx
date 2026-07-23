@@ -10,6 +10,7 @@ import { ParentLoginForm } from "@/components/ParentLoginForm";
 import { AdminLoginForm } from "@/components/AdminLoginForm";
 import { Announcement } from "@/components/Announcement";
 import { Footer } from "@/components/Footer";
+import { SafeImage } from "@/components/shared/SafeImage";
 import { Clock } from "lucide-react";
 
 type PageState = "loading" | "select" | "parent-login" | "admin-login";
@@ -36,19 +37,16 @@ export default function LandingPage() {
           <GlassCard className="animate-fade-in mx-auto w-full max-w-sm">
             {/* Logo */}
             <div className="flex justify-center">
-              <img
+              <SafeImage
                 src="/assets/logo.png"
                 alt={siteConfig.school.name}
                 className="h-12 w-12 rounded-full object-cover shadow-md ring-2 ring-white"
-                onError={(e) => {
-                  (e.currentTarget).style.display = "none";
-                  const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-                  if (fb) fb.style.display = "flex";
-                }}
+                fallback={
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-base font-bold text-red-700">
+                    KJP
+                  </div>
+                }
               />
-              <div className="hidden h-12 w-12 items-center justify-center rounded-full bg-red-100 text-base font-bold text-red-700">
-                KJP
-              </div>
             </div>
 
             {/* Title */}

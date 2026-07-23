@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { siteConfig } from "@/config/site";
+import { SafeImage } from "@/components/shared/SafeImage";
 
 export function LoadingScreen({ onFinish }: { onFinish: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -38,19 +39,16 @@ export function LoadingScreen({ onFinish }: { onFinish: () => void }) {
       }}
     >
       <div className="flex flex-col items-center gap-5">
-        <img
+        <SafeImage
           src="/assets/logo.png"
           alt={siteConfig.school.name}
           className="h-20 w-20 rounded-full object-cover shadow-[0_0_30px_rgba(255,255,255,0.2)] ring-2 ring-white/20"
-          onError={(e) => {
-            (e.currentTarget).style.display = "none";
-            const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-            if (fb) fb.style.display = "flex";
-          }}
+          fallback={
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white">
+              KJP
+            </div>
+          }
         />
-        <div className="hidden h-20 w-20 items-center justify-center rounded-full bg-white/20 text-2xl font-bold text-white">
-          KJP
-        </div>
 
         <div className="text-center">
           <h1 className="text-lg font-bold text-white tracking-tight">{siteConfig.app.name}</h1>
