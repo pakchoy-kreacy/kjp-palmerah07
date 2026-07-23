@@ -31,11 +31,12 @@ export async function getActivePeriod(): Promise<{
 export async function getDashboardStats(): Promise<{
   total: number;
   submitted: number;
+  draft: number;
   notStarted: number;
   needsRevision: number;
 }> {
   const period = await getActivePeriod();
-  if (!period) return { total: 0, submitted: 0, notStarted: 0, needsRevision: 0 };
+  if (!period) return { total: 0, submitted: 0, draft: 0, notStarted: 0, needsRevision: 0 };
 
   const supabase = createAdminClient();
   const { data } = await supabase
@@ -46,8 +47,8 @@ export async function getDashboardStats(): Promise<{
   const rows = data ?? [];
   return {
     total: rows.length,
-    submitted: rows.filter((r) => r.status === "submitted" || r.status === "verified")
-      .length,
+    submitted: rows.filter((r) => r.status === "submitted" || r.status === "verified").length,
+    draft: rows.filter((r) => r.status === "draft").length,
     notStarted: rows.filter((r) => r.status === "not_started").length,
     needsRevision: rows.filter((r) => r.status === "needs_revision").length,
   };

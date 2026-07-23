@@ -13,10 +13,12 @@ export function DashboardCards({
   stats: {
     total: number;
     submitted: number;
+    draft: number;
     notStarted: number;
     needsRevision: number;
   };
 }) {
+  const filled = stats.draft + stats.submitted;
   const cards = [
     {
       key: "total" as const,
@@ -29,7 +31,7 @@ export function DashboardCards({
     {
       key: "submitted" as const,
       label: "Sudah Mengisi",
-      value: stats.submitted,
+      value: filled,
       accent: "text-green-600",
       bg: "bg-green-50/60",
       iconBg: "bg-green-100/80",
@@ -67,14 +69,14 @@ export function DashboardCards({
               </div>
               {c.key === "total" && (
                 <div className="flex h-6 items-center rounded-full bg-blue-50 px-2 text-[10px] font-semibold text-blue-600">
-                  {stats.submitted > 0
-                    ? `${Math.round((stats.submitted / (stats.total || 1)) * 100)}%`
+                  {filled > 0
+                    ? `${Math.round((filled / (stats.total || 1)) * 100)}%`
                     : "0%"}
                 </div>
               )}
               {c.key === "submitted" && stats.total > 0 && (
                 <div className="flex h-6 items-center rounded-full bg-green-50 px-2 text-[10px] font-semibold text-green-600">
-                  {Math.round((stats.submitted / stats.total) * 100)}%
+                  {Math.round((filled / stats.total) * 100)}%
                 </div>
               )}
             </div>

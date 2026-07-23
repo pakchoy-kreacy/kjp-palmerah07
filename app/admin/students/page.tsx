@@ -10,6 +10,7 @@ export default async function StudentsPage() {
   const stats = {
     total: rows.length,
     submitted: rows.filter((r) => r.status === "submitted" || r.status === "verified").length,
+    draft: rows.filter((r) => r.status === "draft").length,
     notStarted: rows.filter((r) => r.status === "not_started").length,
     needsRevision: rows.filter((r) => r.status === "needs_revision").length,
   };

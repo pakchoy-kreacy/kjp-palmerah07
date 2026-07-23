@@ -198,7 +198,7 @@ export function StudentDrawer({
                   <DrawerDocumentsTab
                     documents={detail.documents}
                     documentTypes={detail.documentTypes}
-                    applicationId={applicationId}
+                    applicationId={applicationId!}
                   />
                 </TabsContent>
 
