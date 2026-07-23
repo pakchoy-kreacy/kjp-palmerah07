@@ -55,9 +55,7 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
         {logoUrl ? (
           <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white/20" />
         ) : (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white">
-            K
-          </div>
+          <img src="/assets/logo.png" alt="" className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-white/20" />
         )}
         {!collapsed && (
           <div className="min-w-0">

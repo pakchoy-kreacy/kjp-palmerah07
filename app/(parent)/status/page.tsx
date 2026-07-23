@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getParentSession } from "@/lib/parent-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { StatusCard } from "@/components/parent/StatusCard";
 import { LogoutButton } from "@/components/shared/LogoutButton";
 import { Button } from "@/components/ui/button";
+import { GradientBackground } from "@/components/GradientBackground";
+import { GlassCard } from "@/components/GlassCard";
+import { SafeImage } from "@/components/shared/SafeImage";
+import { siteConfig } from "@/config/site";
 import { formatBytes } from "@/lib/utils";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -32,49 +36,76 @@ export default async function StatusPage() {
   const student = application?.student;
 
   return (
-    <main className="flex flex-1 flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">{student?.name}</h1>
-          <p className="text-sm text-muted-foreground">Kelas {student?.class}</p>
+    <GradientBackground>
+      <main className="flex flex-1 flex-col px-4 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <SafeImage
+              src="/assets/logo.png"
+              alt={siteConfig.school.name}
+              className="h-10 w-10 rounded-full object-cover shadow-md"
+            />
+            <div>
+              <h1 className="text-sm font-bold text-white">{siteConfig.app.name}</h1>
+              <p className="text-[10px] text-white/60">{siteConfig.school.name}</p>
+            </div>
+          </div>
+          <LogoutButton redirectTo="/dashboard" />
         </div>
-        <LogoutButton redirectTo="/dashboard" />
-      </div>
 
-      <StatusCard
-        status={status}
-        revisionNotes={application?.revision_notes ?? null}
-      />
+        <GlassCard className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-lg font-bold text-red-700">
+              {student?.name?.charAt(0) ?? "S"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold text-gray-900 truncate">{student?.name}</h2>
+              <p className="text-xs text-gray-500">Kelas {student?.class ?? "-"}</p>
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <h2 className="text-sm font-medium">Dokumen</h2>
-        {docTypes?.length ? (
-          docTypes.map((dt: any) => {
-            const up = documents?.find((d: any) => d.document_type_id === dt.id);
-            return (
-              <div
-                key={dt.id}
-                className="flex items-center justify-between rounded-md border p-3 text-sm"
-              >
-                <span>{dt.name}</span>
-                <span className="text-muted-foreground">
-                  {up ? up.file_name : "—"}
-                </span>
-              </div>
-            );
-          })
-        ) : (
-          <p className="text-sm text-muted-foreground">Belum ada dokumen.</p>
-        )}
-      </div>
+          <StatusCard
+            status={status}
+            revisionNotes={application?.revision_notes ?? null}
+          />
 
-      {(status === "draft" || status === "needs_revision") && (
-        <Button asChild className="mt-2 w-full">
-          <Link href="/form">
-            {status === "needs_revision" ? "Perbaiki Data" : "Lanjutkan Pengisian"}
-          </Link>
-        </Button>
-      )}
-    </main>
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 mb-2">Dokumen</h3>
+            <div className="space-y-2">
+              {docTypes?.length ? (
+                docTypes.map((dt: any) => {
+                  const up = documents?.find((d: any) => d.document_type_id === dt.id);
+                  return (
+                    <div
+                      key={dt.id}
+                      className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2.5 text-sm"
+                    >
+                      <span className="font-medium text-gray-700">{dt.name}</span>
+                      <span className="text-xs text-gray-400">
+                        {up ? up.file_name : "Belum diupload"}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-gray-400">Belum ada dokumen.</p>
+              )}
+            </div>
+          </div>
+
+          {(status === "draft" || status === "needs_revision") && (
+            <Button asChild className="w-full">
+              <Link href="/form">
+                {status === "needs_revision" ? "Perbaiki Data" : "Lanjutkan Pengisian"}
+              </Link>
+            </Button>
+          )}
+        </GlassCard>
+
+        <p className="mt-auto pt-4 text-center text-[10px] text-white/40">
+          {siteConfig.app.name} v{siteConfig.app.version}
+        </p>
+      </main>
+    </GradientBackground>
   );
 }
