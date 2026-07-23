@@ -156,8 +156,8 @@ export function ImportDialog({
           )}
 
           {preview && preview.errors.length === 0 && (
-            <div className="rounded-lg border border-green-100 bg-green-50 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
+            <div className="rounded-lg border border-green-100 bg-green-50 p-4 space-y-2 text-center">
+              <div className="flex items-center justify-center gap-2 text-green-700 font-semibold text-sm">
                 <CheckCircle2 className="h-5 w-5" /> Import Siap Diproses
               </div>
               <div className="text-sm text-green-600 space-y-0.5">
@@ -172,7 +172,7 @@ export function ImportDialog({
 
           {preview && preview.errors.length > 0 && (
             <div className="rounded-lg border border-gray-200 p-4 space-y-2">
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center justify-center gap-3 text-sm">
                 <span className="font-semibold text-gray-600">Total: {preview.total}</span>
                 <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700">
                   <CheckCircle2 className="h-3.5 w-3.5" /> {preview.valid} Valid

@@ -119,13 +119,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Gagal import: " + upsertError.message }, { status: 500 });
   }
 
-  // Dapatkan active period
-  const { data: activePeriod } = await supabase
+  // Dapatkan atau buat active period
+  let { data: activePeriod } = (await supabase
     .from("periods")
     .select("id")
     .eq("is_active", true)
     .limit(1)
-    .maybeSingle();
+    .maybeSingle()) as { data: { id: string } | null };
+
+  if (!activePeriod) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const { data: newPeriod, error: periodError } = await supabase
+      .from("periods")
+      .insert({ year, is_active: true, start_date: `${year}-01-01`, end_date: `${year}-12-31` })
+      .select("id")
+      .single();
+    if (periodError || !newPeriod) {
+      return NextResponse.json({ error: "Gagal membuat periode aktif: " + (periodError?.message ?? "unknown") }, { status: 500 });
+    }
+    activePeriod = newPeriod as { id: string };
+  }
 
   if (activePeriod) {
     // Cari student IDs dari NISN
