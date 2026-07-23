@@ -39,10 +39,15 @@ export async function getDashboardStats(): Promise<{
   if (!period) return { total: 0, submitted: 0, draft: 0, notStarted: 0, needsRevision: 0 };
 
   const supabase = createAdminClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("applications")
     .select("status")
     .eq("period_id", period.id);
+
+  if (error) {
+    console.error("getDashboardStats error:", error);
+    return { total: 0, submitted: 0, draft: 0, notStarted: 0, needsRevision: 0 };
+  }
 
   const rows = data ?? [];
   return {
@@ -60,12 +65,30 @@ export async function getStudentRows(): Promise<StudentRow[]> {
 
   const supabase = createAdminClient();
 
-  const { data: apps } = await supabase
+  const { data: apps, error: appsError } = await supabase
     .from("applications")
-    .select("id, status, updated_at, student:students(id, name, nisn, class)")
+    .select("id, status, updated_at, student_id")
     .eq("period_id", period.id);
 
-  const appIds = (apps ?? []).map((a: any) => a.id);
+  if (appsError || !apps?.length) {
+    if (appsError) console.error("getStudentRows apps error:", appsError);
+    return [];
+  }
+
+  const studentIds = [...new Set(apps.map((a) => a.student_id))];
+  const { data: students, error: studError } = await supabase
+    .from("students")
+    .select("id, name, nisn, class")
+    .in("id", studentIds);
+
+  if (studError) {
+    console.error("getStudentRows students error:", studError);
+    return [];
+  }
+
+  const studentMap = new Map((students ?? []).map((s) => [s.id, s]));
+
+  const appIds = apps.map((a) => a.id);
   let docMap: Record<string, number> = {};
   if (appIds.length) {
     const { data: docs } = await supabase
@@ -84,15 +107,18 @@ export async function getStudentRows(): Promise<StudentRow[]> {
     .eq("is_required", true);
   const reqCount = reqTypes?.length ?? 0;
 
-  return (apps ?? []).map((a: any) => ({
-    applicationId: a.id,
-    status: a.status,
-    studentId: a.student?.id,
-    name: a.student?.name ?? "—",
-    nisn: a.student?.nisn ?? "—",
-    class: a.student?.class ?? "—",
-    docCount: docMap[a.id] ?? 0,
-    docRequired: reqCount,
-    updatedAt: a.updated_at,
-  }));
+  return apps.map((a) => {
+    const s = studentMap.get(a.student_id);
+    return {
+      applicationId: a.id,
+      status: a.status,
+      studentId: a.student_id,
+      name: s?.name ?? "—",
+      nisn: s?.nisn ?? "—",
+      class: s?.class ?? "—",
+      docCount: docMap[a.id] ?? 0,
+      docRequired: reqCount,
+      updatedAt: a.updated_at,
+    };
+  });
 }

@@ -161,6 +161,7 @@ export async function POST(request: Request) {
     const newStudentIds = studentIds.filter((id) => !existingStudentIds.has(id));
 
     // Buat aplikasi untuk siswa baru
+    let appsCreated = 0;
     if (newStudentIds.length > 0) {
       const { error: appError } = await supabase
         .from("applications")
@@ -169,8 +170,11 @@ export async function POST(request: Request) {
       if (appError) {
         return NextResponse.json({ error: "Gagal membuat aplikasi: " + appError.message }, { status: 500 });
       }
+      appsCreated = newStudentIds.length;
     }
+
+    return NextResponse.json({ ok: true, added, updated, appsCreated, students: added + updated, appsTotal: studentIds.length });
   }
 
-  return NextResponse.json({ ok: true, added, updated });
+  return NextResponse.json({ ok: true, added, updated, periodCreated: false });
 }
