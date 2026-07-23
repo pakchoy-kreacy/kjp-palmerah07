@@ -22,7 +22,7 @@ export function LoginSelector({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-gray-900">Orang Tua / Wali</p>
-          <p className="text-xs font-medium text-gray-500">Isi data dan unggah dokumen KJP</p>
+          <p className="text-xs font-medium text-gray-600">Isi data dan unggah dokumen KJP</p>
         </div>
       </button>
 
@@ -35,7 +35,7 @@ export function LoginSelector({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-gray-900">Admin Sekolah</p>
-          <p className="text-xs font-medium text-gray-500">Kelola pendataan siswa</p>
+          <p className="text-xs font-medium text-gray-600">Kelola pendataan siswa</p>
         </div>
       </button>
     </div>

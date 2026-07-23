@@ -38,7 +38,7 @@ export default async function StatusPage() {
           <h1 className="text-lg font-semibold">{student?.name}</h1>
           <p className="text-sm text-muted-foreground">Kelas {student?.class}</p>
         </div>
-        <LogoutButton />
+        <LogoutButton redirectTo="/dashboard" />
       </div>
 
       <StatusCard

@@ -41,9 +41,9 @@ export function DocumentUpload({
   }, [documents]);
 
   async function handleFile(typeId: string, file: File) {
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error("Ukuran file maksimal 5MB");
+      toast.error("Ukuran file maksimal 2MB");
       return;
     }
 
@@ -150,8 +150,8 @@ export function DocumentUpload({
                   <>
                     <input
                       type="file"
-                      accept="image/*,application/pdf"
-                      capture="environment"
+                      accept="application/pdf"
+                      capture={false}
                       className="hidden"
                       onChange={(e) => {
                         const f = e.target.files?.[0];

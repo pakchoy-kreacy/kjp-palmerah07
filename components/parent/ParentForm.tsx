@@ -197,7 +197,9 @@ export function ParentForm() {
       {/* Fixed top bar */}
       <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur px-4 py-3">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-sm font-bold text-gray-800 truncate">{application?.student?.name ?? "Formulir"}</h1>
+          <h1 className="text-sm font-bold text-gray-800 truncate">
+            Selamat mengisi, Orangtua dari {application?.student?.name ?? "Siswa"} kelas {application?.student?.class ?? "-"}
+          </h1>
           {locked && <StatusBadge status={status as any} />}
         </div>
         <Stepper steps={STEPS.map((s) => ({ number: s.number, label: s.label }))} currentStep={STEP_INDEX[currentStep] + 1} />
@@ -250,7 +252,7 @@ export function ParentForm() {
             <section className="space-y-3 rounded-lg border bg-card p-4">
               <h2 className="text-base font-semibold">IV. Upload Dokumen</h2>
               <p className="text-xs text-muted-foreground">
-                Unggah dokumen yang diperlukan. Format: JPG, PNG, atau PDF (maks. 5MB per file).
+                Unggah dokumen yang diperlukan. Format: PDF (maks. 2MB per file).
               </p>
               <DocumentUpload documentTypes={documentTypes} documents={documents} />
             </section>

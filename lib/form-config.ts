@@ -13,7 +13,7 @@ export interface FieldConfig {
 export const STUDENT_FIELDS: FieldConfig[] = [
   { key: "nik", label: "NIK", type: "text", placeholder: "16 digit NIK", inputMode: "numeric" },
   { key: "no_kk", label: "No. KK", type: "text", placeholder: "16 digit No. KK", inputMode: "numeric" },
-  { key: "name", label: "Nama", type: "text", full: true },
+  { key: "name", label: "Nama Lengkap", type: "text", placeholder: "Nama lengkap siswa", full: true },
   {
     key: "gender", label: "Jenis Kelamin", type: "radio",
     options: [
@@ -21,17 +21,17 @@ export const STUDENT_FIELDS: FieldConfig[] = [
       { value: "P", label: "Perempuan" },
     ],
   },
-  { key: "birth_place", label: "Tempat Lahir", type: "text" },
+  { key: "birth_place", label: "Tempat Lahir", type: "text", placeholder: "Kota kelahiran" },
   { key: "birth_date", label: "Tanggal Lahir", type: "date" },
-  { key: "mother_name", label: "Nama Ibu Kandung", type: "text", full: true },
-  { key: "address", label: "Alamat", type: "text", full: true },
-  { key: "rt", label: "RT", type: "text" },
-  { key: "rw", label: "RW", type: "text" },
-  { key: "province", label: "Provinsi", type: "text" },
-  { key: "city", label: "Kota/Kabupaten", type: "text" },
-  { key: "district", label: "Kecamatan", type: "text" },
-  { key: "sub_district", label: "Kelurahan/Desa", type: "text" },
-  { key: "postal_code", label: "Kode Pos", type: "text", inputMode: "numeric" },
+  { key: "mother_name", label: "Nama Ibu Kandung", type: "text", placeholder: "Nama ibu kandung siswa", full: true },
+  { key: "address", label: "Alamat Lengkap", type: "text", placeholder: "Alamat lengkap dengan nomor", full: true },
+  { key: "rt", label: "RT", type: "text", placeholder: "001" },
+  { key: "rw", label: "RW", type: "text", placeholder: "002" },
+  { key: "province", label: "Provinsi", type: "text", placeholder: "Nama provinsi" },
+  { key: "city", label: "Kota/Kabupaten", type: "text", placeholder: "Nama kota/kabupaten" },
+  { key: "district", label: "Kecamatan", type: "text", placeholder: "Nama kecamatan" },
+  { key: "sub_district", label: "Kelurahan/Desa", type: "text", placeholder: "Nama kelurahan" },
+  { key: "postal_code", label: "Kode Pos", type: "text", placeholder: "5 digit", inputMode: "numeric" },
   {
     key: "class", label: "Kelas", type: "radio",
     options: [
@@ -44,11 +44,11 @@ export const STUDENT_FIELDS: FieldConfig[] = [
     ],
   },
   { key: "nisn", label: "NISN", type: "text", placeholder: "10 digit NISN", inputMode: "numeric" },
-  { key: "npwp", label: "NPWP", type: "text", inputMode: "numeric" },
+  { key: "npwp", label: "NPWP", type: "text", placeholder: "15 digit (opsional)", inputMode: "numeric" },
   { key: "identity_expiry", label: "Masa Berlaku Identitas", type: "date" },
   { key: "identity_permanent", label: "Seumur Hidup", type: "checkbox" },
-  { key: "phone_mobile", label: "No. HP", type: "tel", inputMode: "tel", placeholder: "08xxxxxxxxxx" },
-  { key: "phone_home", label: "No. Telepon", type: "tel", inputMode: "tel" },
+  { key: "phone_mobile", label: "No. HP", type: "tel", placeholder: "08xxxxxxxxxx", inputMode: "tel" },
+  { key: "phone_home", label: "No. Telepon", type: "tel", placeholder: "Kode area + nomor", inputMode: "tel" },
   {
     key: "mail_pickup", label: "Alamat Surat", type: "radio",
     options: [
@@ -111,13 +111,13 @@ export const STUDENT_FIELDS: FieldConfig[] = [
 ];
 
 export const GUARDIAN_FIELDS: FieldConfig[] = [
-  { key: "name", label: "Nama Wali", type: "text", full: true },
-  { key: "nik", label: "No. KTP/NIK", type: "text", inputMode: "numeric" },
+  { key: "name", label: "Nama Wali", type: "text", placeholder: "Nama lengkap wali", full: true },
+  { key: "nik", label: "No. KTP/NIK", type: "text", placeholder: "16 digit NIK/KTP", inputMode: "numeric" },
   { key: "ktp_expiry", label: "Masa Berlaku KTP", type: "date" },
   { key: "ktp_permanent", label: "Seumur Hidup", type: "checkbox" },
-  { key: "npwp", label: "NPWP", type: "text", inputMode: "numeric" },
-  { key: "no_kk", label: "Kartu Keluarga", type: "text", inputMode: "numeric" },
-  { key: "birth_place", label: "Tempat Lahir", type: "text" },
+  { key: "npwp", label: "NPWP", type: "text", placeholder: "15 digit (opsional)", inputMode: "numeric" },
+  { key: "no_kk", label: "Kartu Keluarga", type: "text", placeholder: "16 digit No. KK", inputMode: "numeric" },
+  { key: "birth_place", label: "Tempat Lahir", type: "text", placeholder: "Kota kelahiran" },
   { key: "birth_date", label: "Tanggal Lahir", type: "date" },
   {
     key: "gender", label: "Jenis Kelamin", type: "radio",
@@ -150,7 +150,7 @@ export const GUARDIAN_FIELDS: FieldConfig[] = [
       { value: "lainnya", label: "Lain-Lain" },
     ],
   },
-  { key: "mother_name", label: "Nama Ibu Kandung Wali", type: "text", full: true },
+  { key: "mother_name", label: "Nama Ibu Kandung Wali", type: "text", placeholder: "Nama ibu kandung wali", full: true },
   {
     key: "marital_status", label: "Status Pernikahan", type: "radio",
     options: [
@@ -178,14 +178,14 @@ export const GUARDIAN_FIELDS: FieldConfig[] = [
       { value: "tidak_kerja", label: "Tidak Kerja" },
     ],
   },
-  { key: "address", label: "Alamat", type: "text", full: true },
-  { key: "rt", label: "RT", type: "text" },
-  { key: "rw", label: "RW", type: "text" },
-  { key: "province", label: "Provinsi", type: "text" },
-  { key: "city", label: "Kota/Kabupaten", type: "text" },
-  { key: "district", label: "Kecamatan", type: "text" },
-  { key: "sub_district", label: "Kelurahan/Desa", type: "text" },
-  { key: "postal_code", label: "Kode Pos", type: "text", inputMode: "numeric" },
+  { key: "address", label: "Alamat Lengkap", type: "text", placeholder: "Alamat lengkap dengan nomor", full: true },
+  { key: "rt", label: "RT", type: "text", placeholder: "001" },
+  { key: "rw", label: "RW", type: "text", placeholder: "002" },
+  { key: "province", label: "Provinsi", type: "text", placeholder: "Nama provinsi" },
+  { key: "city", label: "Kota/Kabupaten", type: "text", placeholder: "Nama kota/kabupaten" },
+  { key: "district", label: "Kecamatan", type: "text", placeholder: "Nama kecamatan" },
+  { key: "sub_district", label: "Kelurahan/Desa", type: "text", placeholder: "Nama kelurahan" },
+  { key: "postal_code", label: "Kode Pos", type: "text", placeholder: "5 digit", inputMode: "numeric" },
   {
     key: "residence_status", label: "Status Tempat Tinggal", type: "radio",
     options: [
@@ -193,8 +193,8 @@ export const GUARDIAN_FIELDS: FieldConfig[] = [
       { value: "pribadi", label: "Milik Pribadi" },
     ],
   },
-  { key: "phone_mobile", label: "No. HP", type: "tel", inputMode: "tel" },
-  { key: "phone_home", label: "No. Telepon", type: "tel", inputMode: "tel" },
+  { key: "phone_mobile", label: "No. HP", type: "tel", placeholder: "08xxxxxxxxxx", inputMode: "tel" },
+  { key: "phone_home", label: "No. Telepon", type: "tel", placeholder: "Kode area + nomor", inputMode: "tel" },
   {
     key: "address_type", label: "Tipe Alamat", type: "radio",
     options: [
@@ -205,8 +205,8 @@ export const GUARDIAN_FIELDS: FieldConfig[] = [
 ];
 
 export const EMERGENCY_FIELDS: FieldConfig[] = [
-  { key: "name", label: "Nama yang Dihubungi (Selain Wali)", type: "text", full: true },
-  { key: "id_number", label: "No. Identitas", type: "text" },
+  { key: "name", label: "Nama yang Dihubungi (Selain Wali)", type: "text", placeholder: "Nama lengkap kontak darurat", full: true },
+  { key: "id_number", label: "No. Identitas", type: "text", placeholder: "KTP/SIM (opsional)" },
   {
     key: "relationship", label: "Hubungan", type: "radio",
     options: [
@@ -219,13 +219,13 @@ export const EMERGENCY_FIELDS: FieldConfig[] = [
       { value: "mertua", label: "Mertua" },
     ],
   },
-  { key: "address", label: "Alamat", type: "text", full: true },
-  { key: "rt", label: "RT", type: "text" },
-  { key: "rw", label: "RW", type: "text" },
-  { key: "province", label: "Provinsi", type: "text" },
-  { key: "city", label: "Kota/Kabupaten", type: "text" },
-  { key: "district", label: "Kecamatan", type: "text" },
-  { key: "sub_district", label: "Kelurahan/Desa", type: "text" },
-  { key: "postal_code", label: "Kode Pos", type: "text", inputMode: "numeric" },
-  { key: "phone", label: "No. Telepon", type: "tel", inputMode: "tel" },
+  { key: "address", label: "Alamat", type: "text", placeholder: "Alamat lengkap (opsional)", full: true },
+  { key: "rt", label: "RT", type: "text", placeholder: "001" },
+  { key: "rw", label: "RW", type: "text", placeholder: "002" },
+  { key: "province", label: "Provinsi", type: "text", placeholder: "Nama provinsi" },
+  { key: "city", label: "Kota/Kabupaten", type: "text", placeholder: "Nama kota" },
+  { key: "district", label: "Kecamatan", type: "text", placeholder: "Nama kecamatan" },
+  { key: "sub_district", label: "Kelurahan/Desa", type: "text", placeholder: "Nama kelurahan" },
+  { key: "postal_code", label: "Kode Pos", type: "text", placeholder: "5 digit", inputMode: "numeric" },
+  { key: "phone", label: "No. Telepon", type: "tel", placeholder: "08xxxxxxxxxx", inputMode: "tel" },
 ];

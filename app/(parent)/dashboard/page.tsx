@@ -95,7 +95,7 @@ export default async function DashboardPage() {
 
           <Link
             href="/status"
-            className="flex h-11 w-full items-center justify-center rounded-xl border-2 border-white/40 bg-white/10 text-sm font-bold text-white backdrop-blur-[4px] transition-all duration-200 hover:bg-white/20"
+            className="flex h-11 w-full items-center justify-center rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-800 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow"
           >
             Lihat Status Pengajuan
           </Link>

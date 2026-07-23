@@ -79,7 +79,7 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
         <span className="relative text-sm">{loading ? "Memproses..." : "Masuk"}</span>
       </button>
 
-      <div className="space-y-1 text-center text-xs text-gray-500">
+      <div className="space-y-1 text-center text-xs text-gray-600">
         <p className="font-semibold">Lupa NISN anak Anda?</p>
         <p>
           {siteConfig.school.whatsappNumber ? (
@@ -88,7 +88,7 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
               Hubungi Admin Sekolah via WhatsApp
             </a>
           ) : (
-            <span className="font-semibold text-gray-500">Hubungi Admin Sekolah via WhatsApp</span>
+            <span className="font-semibold text-gray-600">Hubungi Admin Sekolah via WhatsApp</span>
           )}
         </p>
         <p className="font-semibold">atau</p>
@@ -99,13 +99,13 @@ export function ParentLoginForm({ onBack }: { onBack: () => void }) {
               Cek NISN di sini
             </a>
           ) : (
-            <span className="font-semibold text-gray-500">Cek NISN di sini</span>
+            <span className="font-semibold text-gray-600">Cek NISN di sini</span>
           )}
         </p>
       </div>
 
       <button type="button" onClick={onBack}
-        className="mx-auto block text-xs font-bold text-gray-500 transition-colors hover:text-gray-700">
+        className="mx-auto block text-xs font-bold text-red-600 transition-colors hover:text-red-700">
         &larr; Kembali
       </button>
     </form>

@@ -158,7 +158,7 @@ export function FormSection({
     <section className="space-y-4 rounded-lg border bg-card p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold">{title}</h2>
-        <Button type="button" variant="outline" size="sm" onClick={onManualSave}>
+        <Button type="button" size="sm" onClick={onManualSave} className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
           Simpan Draft
         </Button>
       </div>
@@ -203,7 +203,7 @@ export function FormSection({
                     <RadioGroup
                       value={field.value ?? ""}
                       onValueChange={field.onChange}
-                      className="flex flex-wrap gap-x-4 gap-y-1 pt-1"
+                      className="grid grid-cols-2 gap-x-3 gap-y-2 pt-1"
                     >
                       {f.options?.map((o) => (
                         <label
