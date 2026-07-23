@@ -18,7 +18,8 @@ export function DashboardCards({
     needsRevision: number;
   };
 }) {
-  const filled = stats.draft + stats.submitted;
+  const filled = stats.submitted;
+  const perluRevisi = stats.draft + stats.needsRevision;
   const cards = [
     {
       key: "total" as const,
@@ -37,20 +38,20 @@ export function DashboardCards({
       iconBg: "bg-green-100/80",
     },
     {
+      key: "needsRevision" as const,
+      label: "Perlu Revisi",
+      value: perluRevisi,
+      accent: "text-red-600",
+      bg: "bg-red-50/60",
+      iconBg: "bg-red-100/80",
+    },
+    {
       key: "notStarted" as const,
       label: "Belum Mengisi",
       value: stats.notStarted,
       accent: "text-orange-600",
       bg: "bg-orange-50/60",
       iconBg: "bg-orange-100/80",
-    },
-    {
-      key: "needsRevision" as const,
-      label: "Perlu Revisi",
-      value: stats.needsRevision,
-      accent: "text-red-600",
-      bg: "bg-red-50/60",
-      iconBg: "bg-red-100/80",
     },
   ];
 
