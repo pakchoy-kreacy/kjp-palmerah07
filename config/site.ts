@@ -25,7 +25,7 @@ export interface SiteConfig {
 export const siteConfig: SiteConfig = {
   school: {
     name: "SDN Palmerah 07 Pagi",
-    whatsappNumber: "",
+    whatsappNumber: "6285814328683",
   },
   app: {
     name: "Portal Pendataan KJP Plus",

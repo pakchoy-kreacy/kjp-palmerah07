@@ -9,6 +9,15 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function normalizeNulls(obj: Record<string, unknown> | null): Record<string, unknown> {
+  if (!obj) return {};
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k] = v === null ? undefined : v;
+  }
+  return out;
+}
+
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
@@ -54,7 +63,7 @@ export async function POST(
       { status: 400 }
     );
   }
-  const sRes = studentDataDraftSchema.safeParse(sd);
+  const sRes = studentDataDraftSchema.safeParse(normalizeNulls(sd));
   if (!sRes.success) {
     return NextResponse.json(
       { error: "Data siswa belum lengkap: " + sRes.error.issues[0].path.join(".") },
@@ -62,7 +71,7 @@ export async function POST(
     );
   }
   if (gd) {
-    const gRes = guardianDataDraftSchema.safeParse(gd);
+    const gRes = guardianDataDraftSchema.safeParse(normalizeNulls(gd));
     if (!gRes.success) {
       return NextResponse.json(
         { error: "Data wali belum lengkap: " + gRes.error.issues[0].path.join(".") },
@@ -71,7 +80,7 @@ export async function POST(
     }
   }
   if (ec) {
-    const eRes = emergencyDataSchema.partial().safeParse(ec);
+    const eRes = emergencyDataSchema.partial().safeParse(normalizeNulls(ec));
     if (!eRes.success) {
       return NextResponse.json(
         { error: "Data kontak darurat belum lengkap." },

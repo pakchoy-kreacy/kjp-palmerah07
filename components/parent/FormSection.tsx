@@ -210,8 +210,8 @@ export function FormSection({
               className={cn(
                 "space-y-1 rounded-lg p-1.5 -mx-1.5",
                 f.full && "col-span-2",
-                Math.floor(i / 2) % 2 !== 0 && !f.full && "bg-gray-50/60",
-                f.full && i % 2 !== 0 && "bg-gray-50/60"
+                Math.floor(i / 2) % 2 !== 0 && !f.full && "bg-gray-100",
+                f.full && i % 2 !== 0 && "bg-gray-100"
               )}
             >
               <Label htmlFor={f.key}>{f.label}</Label>

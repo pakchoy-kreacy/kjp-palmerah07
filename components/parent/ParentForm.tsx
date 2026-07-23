@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ChevronLeft, ChevronRight, Send, FileText, Users, Phone,
-  Upload, Eye, CheckCircle2, AlertCircle, Loader2
+  Upload, Eye, CheckCircle2, AlertCircle, Loader2, HelpCircle
 } from "lucide-react";
 import { useApplication, ApplicationPayload } from "@/hooks/useApplication";
 import { FormSection } from "@/components/parent/FormSection";
@@ -356,7 +356,19 @@ export function ParentForm() {
       </div>
 
       {/* Bottom nav */}
-      <div className="fixed inset-x-0 bottom-0 border-t bg-white px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="fixed inset-x-0 bottom-0 border-t bg-white px-4 pb-2 pt-2 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        {/* WA Help */}
+        <div className="mx-auto mb-2 max-w-lg text-center">
+          <a
+            href="https://wa.me/6285814328683?text=Permisi%20Bu%2C%20saya%20ada%20kendala%20terkait%20pengisian%20form%20di%20bagian%20..."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[10px] font-medium text-gray-400 transition-colors hover:text-green-600"
+          >
+            <HelpCircle className="h-3 w-3" />
+            Terkendala pengisian? Hubungi admin via WhatsApp
+          </a>
+        </div>
         <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
           <Button
             variant="outline"
