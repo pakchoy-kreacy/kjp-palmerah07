@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { LogOut, Menu, CalendarDays, GraduationCap } from "lucide-react";
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { AdminLayoutContext } from "./AdminShell";
 
 export function AdminNavbar() {
-  const router = useRouter();
   const { setSidebarOpen } = React.useContext(AdminLayoutContext);
   const [adminName, setAdminName] = React.useState("Admin");
   const [schoolName, setSchoolName] = React.useState("SDN Palmerah 07 Pagi");
@@ -60,10 +58,10 @@ export function AdminNavbar() {
 
   async function logout() {
     const supabase = createClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast.error("Gagal keluar"); return; }
     toast.success("Berhasil keluar");
-    router.push("/admin/login");
-    router.refresh();
+    window.location.href = "/admin/login";
   }
 
   return (
