@@ -80,13 +80,19 @@ export function ParentForm() {
   const emergencyEnabled = new Set(EMERGENCY_FIELDS.map((f) => f.key));
 
   const STUDENT_OPTIONAL = new Set([
-    "npwp","phone_home","disability","identity_expiry","identity_permanent",
+    "nik","no_kk","gender","mother_name","address","rt","rw","province","city","district","sub_district","postal_code",
+    "npwp","nisn","identity_expiry","identity_permanent","phone_mobile","phone_home",
+    "mail_pickup","address_type","residence_status","religion","education","disability",
   ]);
   const GUARDIAN_OPTIONAL = new Set([
-    "npwp","phone_home","ktp_permanent","ktp_expiry","no_kk","birth_place","birth_date","mother_name","gender","address_type",
+    "name","nik","ktp_expiry","ktp_permanent","npwp","no_kk","birth_place","birth_date",
+    "gender","religion","occupation","mother_name","marital_status","last_education",
+    "employment_status","address","rt","rw","province","city","district","sub_district",
+    "postal_code","residence_status","phone_mobile","phone_home","address_type",
   ]);
   const EMERGENCY_OPTIONAL = new Set([
-    "id_number","relationship","address","rt","rw","province","city","district","sub_district","postal_code",
+    "name","id_number","relationship","address","rt","rw",
+    "province","city","district","sub_district","postal_code","phone",
   ]);
 
   const studentFilled = countFilled(studentData, STUDENT_OPTIONAL);
