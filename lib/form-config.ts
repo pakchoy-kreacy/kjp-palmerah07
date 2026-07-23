@@ -140,7 +140,7 @@ export const GUARDIAN_FIELDS: FieldConfig[] = [
   {
     key: "occupation", label: "Pekerjaan", type: "radio",
     options: [
-      { value: "pelajar", label: "Pelajar/Mahasiswa" },
+      { value: "pelajar", label: "Mahasiswa" },
       { value: "irt", label: "Ibu Rumah Tangga" },
       { value: "swasta", label: "Pegawai Swasta" },
       { value: "wiraswasta", label: "Wiraswasta" },
@@ -208,7 +208,7 @@ export const EMERGENCY_FIELDS: FieldConfig[] = [
   { key: "name", label: "Nama yang Dihubungi (Selain Wali)", type: "text", placeholder: "Nama lengkap kontak darurat", full: true },
   { key: "id_number", label: "No. Identitas", type: "text", placeholder: "KTP/SIM (opsional)" },
   {
-    key: "relationship", label: "Hubungan", type: "radio",
+    key: "relationship", label: "Hubungan", type: "radio", full: true,
     options: [
       { value: "ortu", label: "Orangtua Kandung/Tiri/Angkat" },
       { value: "saudara", label: "Saudara Kandung/Tiri/Angkat" },

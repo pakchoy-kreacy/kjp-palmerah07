@@ -202,12 +202,17 @@ export function FormSection({
       </div>
 
       <form className="grid grid-cols-2 gap-3">
-        {enabled.map((f) => {
+        {enabled.map((f, i) => {
           const fieldError = (errors as any)[f.key]?.message as string | undefined;
           return (
             <div
               key={f.key}
-              className={cn("space-y-1", f.full && "col-span-2")}
+              className={cn(
+                "space-y-1 rounded-lg p-1.5 -mx-1.5",
+                f.full && "col-span-2",
+                Math.floor(i / 2) % 2 !== 0 && !f.full && "bg-gray-50/60",
+                f.full && i % 2 !== 0 && "bg-gray-50/60"
+              )}
             >
               <Label htmlFor={f.key}>{f.label}</Label>
 

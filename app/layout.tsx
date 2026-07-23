@@ -6,6 +6,10 @@ import { Providers } from "@/components/providers";
 export const metadata: Metadata = {
   title: "Portal Pendataan KJP Plus",
   description: "Portal pendataan KJP Plus untuk orang tua dan admin sekolah",
+  icons: {
+    icon: "/assets/logo.png",
+    apple: "/assets/logo.png",
+  },
 };
 
 export const viewport: Viewport = {

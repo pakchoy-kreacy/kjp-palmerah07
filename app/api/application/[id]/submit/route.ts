@@ -1,24 +1,13 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getParentSession } from "@/lib/parent-session";
 import {
-  studentDataSchema,
-  guardianDataSchema,
+  studentDataDraftSchema,
+  guardianDataDraftSchema,
   emergencyDataSchema,
 } from "@/lib/validations";
 
 export const dynamic = "force-dynamic";
-
-function disableCols(
-  settings: { field_key: string; section: string; is_enabled: boolean }[],
-  section: "student" | "guardian"
-): string[] {
-  const prefix = section === "student" ? "student_" : "guardian_";
-  return settings
-    .filter((s) => s.section === section && !s.is_enabled && s.field_key.startsWith(prefix))
-    .map((s) => s.field_key.replace(prefix, ""));
-}
 
 export async function POST(
   request: Request,
@@ -53,20 +42,6 @@ export async function POST(
     );
   }
 
-  const { data: formFields } = await supabase
-    .from("form_field_settings")
-    .select("field_key, section, is_enabled");
-  const disabledStudent = disableCols(formFields ?? [], "student");
-  const disabledGuardian = disableCols(formFields ?? [], "guardian");
-
-  // Build submit schemas with disabled fields optional
-  let studentSchema = studentDataSchema;
-  for (const k of disabledStudent)
-    studentSchema = studentSchema.extend({ [k]: z.any().optional() }) as any;
-  let guardianSchema = guardianDataSchema;
-  for (const k of disabledGuardian)
-    guardianSchema = guardianSchema.extend({ [k]: z.any().optional() }) as any;
-
   const [{ data: sd }, { data: gd }, { data: ec }] = await Promise.all([
     supabase.from("student_data").select("*").eq("application_id", params.id).maybeSingle(),
     supabase.from("guardian_data").select("*").eq("application_id", params.id).maybeSingle(),
@@ -79,7 +54,7 @@ export async function POST(
       { status: 400 }
     );
   }
-  const sRes = studentSchema.safeParse(sd);
+  const sRes = studentDataDraftSchema.safeParse(sd);
   if (!sRes.success) {
     return NextResponse.json(
       { error: "Data siswa belum lengkap: " + sRes.error.issues[0].path.join(".") },
@@ -87,7 +62,7 @@ export async function POST(
     );
   }
   if (gd) {
-    const gRes = guardianSchema.safeParse(gd);
+    const gRes = guardianDataDraftSchema.safeParse(gd);
     if (!gRes.success) {
       return NextResponse.json(
         { error: "Data wali belum lengkap: " + gRes.error.issues[0].path.join(".") },

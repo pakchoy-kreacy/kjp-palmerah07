@@ -13,11 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { relativeTime } from "@/lib/utils";
 import {
-  Download,
-  Upload,
-  FileSpreadsheet,
-  CalendarPlus,
-  ExternalLink,
   AlertTriangle,
   RefreshCw,
   CheckCircle2,
@@ -45,14 +40,6 @@ export default async function DashboardPage() {
   const completed = rows.filter((r) => r.status === "verified").length;
   const total = rows.length;
   const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  const QUICK_ACTIONS = [
-    { href: "/admin/settings/import", label: "Import Data", desc: "Upload file Excel siswa", icon: Upload, color: "text-blue-600", bg: "bg-blue-50" },
-    { href: "/api/export", label: "Export Data", desc: "Download semua data Excel", icon: Download, color: "text-green-600", bg: "bg-green-50", external: true },
-    { href: "/api/export/template", label: "Download Template", desc: "Template Excel untuk import", icon: FileSpreadsheet, color: "text-emerald-600", bg: "bg-emerald-50", external: true },
-    { href: "/admin/settings/period", label: "Tambah Periode", desc: "Atur tahun ajaran aktif", icon: CalendarPlus, color: "text-purple-600", bg: "bg-purple-50" },
-    { href: "/admin/settings/landing", label: "Landing Page", desc: "Atur halaman utama portal", icon: ExternalLink, color: "text-rose-600", bg: "bg-rose-50" },
-  ];
 
   return (
     <div className="space-y-6">
@@ -102,35 +89,6 @@ export default async function DashboardPage() {
               <p className="mt-2 text-lg font-bold text-gray-900">{readyForInput}</p>
               <p className="text-xs font-medium text-gray-500">Siap Diinput</p>
             </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="space-y-3 lg:col-span-2">
-          <h2 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-            <Users className="h-4 w-4 text-red-500" /> Tindakan Cepat
-          </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {QUICK_ACTIONS.map((qa) => {
-              const Icon = qa.icon;
-              const Tag = qa.external ? "a" : Link;
-              const props = qa.external
-                ? { href: qa.href, download: true }
-                : { href: qa.href };
-              return (
-                <Tag
-                  key={qa.label}
-                  {...props}
-                  className="group rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 hover:border-gray-200 hover:shadow-md hover:-translate-y-0.5"
-                >
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${qa.bg}`}>
-                    <Icon className={`h-4 w-4 ${qa.color}`} />
-                  </div>
-                  <p className="mt-2 text-xs font-bold text-gray-800 group-hover:text-red-700 transition-colors">{qa.label}</p>
-                  <p className="mt-0.5 text-[10px] text-gray-400">{qa.desc}</p>
-                </Tag>
-              );
-            })}
           </div>
         </div>
       </div>

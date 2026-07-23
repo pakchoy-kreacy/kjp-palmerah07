@@ -120,7 +120,8 @@ export async function PATCH(request: Request) {
   // Normalize null → undefined so Zod optional() doesn't reject
   const normalized: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(cleanData)) {
-    normalized[k] = v === null ? undefined : v;
+    if (v === null || v === "") normalized[k] = undefined;
+    else normalized[k] = v;
   }
 
   let validated: Record<string, unknown>;

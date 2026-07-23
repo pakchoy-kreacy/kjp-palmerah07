@@ -32,7 +32,7 @@ export default async function DashboardPage() {
 
   return (
     <GradientBackground>
-      <main className="flex flex-1 flex-col px-4 py-4">
+      <main className="flex flex-1 flex-col px-4 py-3">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
