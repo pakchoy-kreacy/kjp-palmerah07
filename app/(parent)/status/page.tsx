@@ -20,20 +20,36 @@ export default async function StatusPage() {
   const supabase = createAdminClient();
   const { data: application } = await supabase
     .from("applications")
-    .select("*, student:students(name, class)")
+    .select("*")
     .eq("id", session.applicationId)
     .single();
+
+  let student: any = null;
+  if (application) {
+    const { data: s } = await supabase
+      .from("students")
+      .select("name, class")
+      .eq("id", application.student_id)
+      .maybeSingle();
+    student = s;
+  }
+
   const { data: documents } = await supabase
     .from("document_uploads")
-    .select("*, document_type:document_types(name)")
+    .select("*")
     .eq("application_id", session.applicationId);
   const { data: docTypes } = await supabase
     .from("document_types")
     .select("id, name, is_required")
     .eq("is_active", true);
 
+  const docTypeMap = new Map((docTypes ?? []).map((d: any) => [d.id, d]));
+  const docsWithType = (documents ?? []).map((d: any) => ({
+    ...d,
+    document_type: docTypeMap.get(d.document_type_id) ?? null,
+  }));
+
   const status = application?.status as any;
-  const student = application?.student;
 
   return (
     <GradientBackground>
@@ -74,7 +90,7 @@ export default async function StatusPage() {
             <div className="space-y-2">
               {docTypes?.length ? (
                 docTypes.map((dt: any) => {
-                  const up = documents?.find((d: any) => d.document_type_id === dt.id);
+                  const up = docsWithType?.find((d: any) => d.document_type_id === dt.id);
                   return (
                     <div
                       key={dt.id}

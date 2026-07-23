@@ -16,9 +16,19 @@ export default async function SuccessPage() {
   const supabase = createAdminClient();
   const { data: application } = await supabase
     .from("applications")
-    .select("*, student:students(name)")
+    .select("*")
     .eq("id", session.applicationId)
     .single();
+
+  let studentName: string | undefined;
+  if (application) {
+    const { data: s } = await supabase
+      .from("students")
+      .select("name")
+      .eq("id", application.student_id)
+      .maybeSingle();
+    studentName = s?.name;
+  }
 
   return (
     <GradientBackground>
@@ -31,7 +41,7 @@ export default async function SuccessPage() {
 
             <h1 className="mt-4 text-lg font-bold text-gray-900">Pengajuan Terkirim!</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Data {application?.student?.name ?? "siswa"} berhasil dikirim ke sekolah.
+              Data {studentName ?? "siswa"} berhasil dikirim ke sekolah.
             </p>
 
             <div className="mt-5 rounded-xl bg-green-50 border border-green-200 p-3">

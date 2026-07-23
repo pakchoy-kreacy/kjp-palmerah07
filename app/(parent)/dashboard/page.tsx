@@ -18,16 +18,25 @@ export default async function DashboardPage() {
   const supabase = createAdminClient();
   const { data: application } = await supabase
     .from("applications")
-    .select("*, student:students(*)")
+    .select("*")
     .eq("id", session.applicationId)
     .single();
+
+  let student: any = null;
+  if (application) {
+    const { data: s } = await supabase
+      .from("students")
+      .select("*")
+      .eq("id", application.student_id)
+      .maybeSingle();
+    student = s;
+  }
 
   if (!application) {
     return <div className="p-4 text-sm text-destructive">Data tidak ditemukan.</div>;
   }
 
   const status = application.status as ApplicationStatus;
-  const student = application.student;
   const isFormEditable = status === "not_started" || status === "draft" || status === "needs_revision";
 
   return (

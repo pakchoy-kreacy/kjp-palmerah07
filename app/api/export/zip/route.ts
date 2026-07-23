@@ -26,12 +26,19 @@ export async function GET(request: Request) {
 
   const { data: documents } = await supabase
     .from("document_uploads")
-    .select("file_path, file_name, document_type:document_types(name)")
+    .select("file_path, file_name, document_type_id")
     .eq("application_id", applicationId);
 
   if (!documents?.length) {
     return NextResponse.json({ error: "Tidak ada dokumen." }, { status: 404 });
   }
+
+  // Get document type names
+  const typeIds = [...new Set(documents.map((d) => d.document_type_id))];
+  const { data: docTypes } = typeIds.length
+    ? await supabase.from("document_types").select("id, name").in("id", typeIds)
+    : { data: [] };
+  const typeMap = new Map((docTypes ?? []).map((t: any) => [t.id, t.name]));
 
   const zip = new JSZip();
 
@@ -43,7 +50,7 @@ export async function GET(request: Request) {
 
     if (fileData) {
       const buf = Buffer.from(await fileData.arrayBuffer());
-      const folderName = (doc.document_type as any)?.name ?? "Lainnya";
+      const folderName = typeMap.get(doc.document_type_id) ?? "Lainnya";
       zip.file(`${folderName}/${doc.file_name}`, buf);
     }
   }
