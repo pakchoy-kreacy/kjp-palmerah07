@@ -135,7 +135,7 @@ export function StudentDrawer({
 
   return (
     <Sheet open={!!applicationId} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="flex flex-col w-full sm:max-w-[70vw] p-0">
+      <SheetContent className="flex flex-col w-full sm:max-w-full p-0">
         {loading || !detail ? (
           <div className="space-y-4 p-6">
             <div className="h-7 w-48 animate-pulse rounded-lg bg-gray-200" />
@@ -198,6 +198,7 @@ export function StudentDrawer({
                   <DrawerDocumentsTab
                     documents={detail.documents}
                     documentTypes={detail.documentTypes}
+                    applicationId={applicationId}
                   />
                 </TabsContent>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Eye, Download, FileWarning } from "lucide-react";
+import { Eye, Download, FileWarning, FileArchive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FilePreviewModal } from "@/components/shared/FilePreviewModal";
@@ -10,9 +10,11 @@ import { formatBytes, formatDate } from "@/lib/utils";
 export function DrawerDocumentsTab({
   documents,
   documentTypes,
+  applicationId,
 }: {
   documents: any[];
   documentTypes: any[];
+  applicationId: string;
 }) {
   const [preview, setPreview] = React.useState<{
     url: string;
@@ -49,6 +51,16 @@ export function DrawerDocumentsTab({
 
   return (
     <div className="space-y-3">
+      {documents.length > 1 && (
+        <a
+          href={`/api/export/zip?applicationId=${applicationId}`}
+          download
+          className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow"
+        >
+          <FileArchive className="h-4 w-4 text-red-500" />
+          Download Semua Dokumen (ZIP)
+        </a>
+      )}
       {documentTypes.map((dt: any) => {
         const up = documents.find(
           (d: any) => d.document_type_id === dt.id
