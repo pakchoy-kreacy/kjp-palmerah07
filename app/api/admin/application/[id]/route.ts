@@ -18,11 +18,11 @@ export async function GET(
     { data: activities },
     { data: documentTypes },
   ] = await Promise.all([
-    supabase.from("applications").select("*, student:students(*)").eq("id", params.id).single(),
+    supabase.from("applications").select("*").eq("id", params.id).single(),
     supabase.from("student_data").select("*").eq("application_id", params.id).maybeSingle(),
     supabase.from("guardian_data").select("*").eq("application_id", params.id).maybeSingle(),
     supabase.from("emergency_contacts").select("*").eq("application_id", params.id).maybeSingle(),
-    supabase.from("document_uploads").select("*, document_type:document_types(*)").eq("application_id", params.id),
+    supabase.from("document_uploads").select("*").eq("application_id", params.id),
     supabase.from("activity_logs").select("*").eq("application_id", params.id).order("created_at", { ascending: false }),
     supabase.from("document_types").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
   ]);
@@ -31,13 +31,25 @@ export async function GET(
     return NextResponse.json({ error: "Tidak ditemukan" }, { status: 404 });
   }
 
+  const { data: student } = await supabase
+    .from("students")
+    .select("*")
+    .eq("id", application.student_id)
+    .maybeSingle();
+
+  const docTypeMap = new Map((documentTypes ?? []).map((d: any) => [d.id, d]));
+  const docsWithType = (documents ?? []).map((d: any) => ({
+    ...d,
+    document_type: docTypeMap.get(d.document_type_id) ?? null,
+  }));
+
   return NextResponse.json({
     application,
-    student: application.student,
+    student,
     studentData,
     guardianData,
     emergencyContact,
-    documents: documents ?? [],
+    documents: docsWithType,
     documentTypes: documentTypes ?? [],
     activities: activities ?? [],
   });

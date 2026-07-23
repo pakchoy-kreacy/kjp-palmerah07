@@ -34,10 +34,17 @@ export async function GET() {
 
   const { data: apps } = await supabase
     .from("applications")
-    .select("id, status, student:students(nisn, name, class)")
+    .select("id, status, student_id")
     .eq("period_id", period.id);
 
   const appIds = (apps ?? []).map((a: any) => a.id);
+  const studentIds = [...new Set((apps ?? []).map((a: any) => a.student_id))];
+
+  // Fetch students separately
+  const { data: students } = studentIds.length
+    ? await supabase.from("students").select("id, nisn, name, class").in("id", studentIds)
+    : { data: [] };
+  const studentMap = new Map((students ?? []).map((s: any) => [s.id, s]));
 
   let sds: any[] = [];
   let gds: any[] = [];
@@ -61,10 +68,11 @@ export async function GET() {
   const ecMap = new Map((ecs ?? []).map((r: any) => [r.application_id, r]));
 
   const rows = (apps ?? []).map((a: any) => {
+    const s = studentMap.get(a.student_id);
     const base: Record<string, any> = {
-      NISN: a.student?.nisn,
-      Nama: a.student?.name,
-      Kelas: a.student?.class,
+      NISN: s?.nisn,
+      Nama: s?.name,
+      Kelas: s?.class,
       Status: a.status,
     };
     const sd = sdMap.get(a.id) ?? {};

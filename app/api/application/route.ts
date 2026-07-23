@@ -43,9 +43,19 @@ export async function GET() {
   const supabase = createAdminClient();
   const { data: application } = await supabase
     .from("applications")
-    .select("*, student:students(*)")
+    .select("*")
     .eq("id", session.applicationId)
     .single();
+
+  let student = null;
+  if (application) {
+    const { data: s } = await supabase
+      .from("students")
+      .select("*")
+      .eq("id", application.student_id)
+      .maybeSingle();
+    student = s;
+  }
 
   const [{ data: studentData }, { data: guardianData }, { data: emergency }] =
     await Promise.all([
@@ -81,8 +91,10 @@ export async function GET() {
     .select("*")
     .eq("application_id", session.applicationId);
 
+  const appWithStudent = application ? { ...application, student } : null;
+
   return NextResponse.json({
-    application,
+    application: appWithStudent,
     studentData,
     guardianData,
     emergencyContact: emergency,
