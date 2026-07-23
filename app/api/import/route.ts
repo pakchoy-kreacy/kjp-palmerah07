@@ -98,14 +98,22 @@ export async function POST(request: Request) {
     .in("nisn", records.map((r) => r.nisn));
   const existingSet = new Set((existing ?? []).map((e) => e.nisn));
 
+  // Dedup: keep only first record per NISN
+  const seen = new Set<string>();
+  const deduped = records.filter((r) => {
+    if (seen.has(r.nisn)) return false;
+    seen.add(r.nisn);
+    return true;
+  });
+
   let added = 0, updated = 0;
-  for (const r of records) {
+  for (const r of deduped) {
     if (existingSet.has(r.nisn)) updated++; else added++;
   }
 
   const { error: upsertError } = await supabase
     .from("students")
-    .upsert(records, { onConflict: "nisn" });
+    .upsert(deduped, { onConflict: "nisn" });
 
   if (upsertError) {
     return NextResponse.json({ error: "Gagal import: " + upsertError.message }, { status: 500 });

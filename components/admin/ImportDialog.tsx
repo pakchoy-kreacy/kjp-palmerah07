@@ -150,7 +150,7 @@ export function ImportDialog({
           </div>
 
           {file && !preview && !result && (
-            <Button onClick={previewImport} disabled={loading} variant="secondary" size="sm" className="w-full gap-2 text-xs">
+            <Button onClick={previewImport} disabled={loading} size="sm" className="w-full gap-2 text-xs bg-green-600 hover:bg-green-700 text-white shadow-sm">
               {loading ? "Membaca..." : "Pra-tinjau Data"}
             </Button>
           )}

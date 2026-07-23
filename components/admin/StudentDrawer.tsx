@@ -222,26 +222,16 @@ export function StudentDrawer({
 
             {/* Sticky footer */}
             <div className="shrink-0 border-t bg-white px-6 py-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={goPrev}
-                    disabled={index <= 0}
-                    className="gap-1"
-                  >
-                    <ChevronLeft className="h-4 w-4" /> Sebelumnya
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onClose}
-                    className="text-gray-400"
-                  >
-                    Tutup
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goPrev}
+                  disabled={index <= 0}
+                  className="gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Sebelumnya
+                </Button>
                 <span className="text-xs text-gray-400 font-medium">
                   {index + 1} / {orderedIds.length}
                 </span>
