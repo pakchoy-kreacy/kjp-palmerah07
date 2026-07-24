@@ -20,15 +20,18 @@ export default async function SuccessPage() {
     .eq("id", session.applicationId)
     .single();
 
-  let studentName: string | undefined;
-  if (application) {
-    const { data: s } = await supabase
-      .from("students")
-      .select("name")
-      .eq("id", application.student_id)
-      .maybeSingle();
-    studentName = s?.name;
+  if (!application) redirect("/");
+  if (application.status !== "submitted" && application.status !== "verified") {
+    redirect("/dashboard");
   }
+
+  let studentName: string | undefined;
+  const { data: s } = await supabase
+    .from("students")
+    .select("name")
+    .eq("id", application.student_id)
+    .maybeSingle();
+  studentName = s?.name;
 
   return (
     <GradientBackground>

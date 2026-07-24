@@ -4,8 +4,8 @@ import { getParentSession } from "@/lib/parent-session";
 
 export const dynamic = "force-dynamic";
 
-const MAX_SIZE = 5 * 1024 * 1024;
-const ALLOWED = ["image/jpeg", "image/png", "application/pdf"];
+const MAX_SIZE = 2 * 1024 * 1024;
+const ALLOWED = ["application/pdf"];
 
 export async function POST(request: Request) {
   const session = await getParentSession();
@@ -26,18 +26,27 @@ export async function POST(request: Request) {
 
   if (!ALLOWED.includes(file.type)) {
     return NextResponse.json(
-      { error: "Format file harus JPG, PNG, atau PDF." },
+      { error: "Format file harus PDF." },
       { status: 400 }
     );
   }
-  if (file.size > MAX_SIZE) {
+  if (file.size === 0 || file.size > MAX_SIZE) {
     return NextResponse.json(
-      { error: "Ukuran file maksimal 5 MB." },
+      { error: "Ukuran file harus lebih dari 0 dan maksimal 2 MB." },
       { status: 400 }
     );
   }
 
   const supabase = createAdminClient();
+
+  const { data: documentType } = await supabase
+    .from("document_types")
+    .select("id, is_active")
+    .eq("id", documentTypeId)
+    .maybeSingle();
+  if (!documentType?.is_active) {
+    return NextResponse.json({ error: "Jenis dokumen tidak valid atau tidak aktif." }, { status: 400 });
+  }
 
   // Cek status aplikasi: tidak boleh upload jika sudah submitted/verified (kecuali needs_revision)
   const { data: app } = await supabase
@@ -45,17 +54,24 @@ export async function POST(request: Request) {
     .select("status")
     .eq("id", session.applicationId)
     .single();
-  if (app && (app.status === "submitted" || app.status === "verified")) {
+  if (!app) {
+    return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
+  }
+  if (app.status === "submitted" || app.status === "verified") {
     return NextResponse.json(
       { error: "Pengajuan sudah disubmit, tidak bisa upload." },
       { status: 400 }
     );
   }
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const bytes = await file.arrayBuffer();
+  const header = new TextDecoder().decode(new Uint8Array(bytes).subarray(0, 5));
+  if (header !== "%PDF-") {
+    return NextResponse.json({ error: "Isi file bukan PDF yang valid." }, { status: 400 });
+  }
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100);
   const path = `${session.periodId}/${session.studentId}/${documentTypeId}/${Date.now()}_${safeName}`;
 
-  const bytes = await file.arrayBuffer();
   const { error: uploadErr } = await supabase.storage
     .from("kjp-documents")
     .upload(path, bytes, { contentType: file.type, upsert: true });
@@ -67,23 +83,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // Hapus record & file lama (jika ada) untuk document_type ini
+  // Simpan metadata baru lebih dahulu; file lama baru dihapus setelahnya.
   const { data: old } = await supabase
     .from("document_uploads")
     .select("id, file_path")
     .eq("application_id", session.applicationId)
     .eq("document_type_id", documentTypeId)
     .maybeSingle();
-
-  if (old) {
-    if (old.file_path) {
-      await supabase.storage.from("kjp-documents").remove([old.file_path]);
-    }
-    await supabase
-      .from("document_uploads")
-      .delete()
-      .eq("id", old.id);
-  }
 
   const { error: insErr } = await supabase.from("document_uploads").upsert(
     {
@@ -98,10 +104,15 @@ export async function POST(request: Request) {
   );
 
   if (insErr) {
+    await supabase.storage.from("kjp-documents").remove([path]);
     return NextResponse.json(
-      { error: "Gagal menyimpan record: " + insErr.message },
+      { error: "Gagal menyimpan dokumen." },
       { status: 500 }
     );
+  }
+
+  if (old?.file_path && old.file_path !== path) {
+    await supabase.storage.from("kjp-documents").remove([old.file_path]);
   }
 
   await supabase.from("activity_logs").insert({

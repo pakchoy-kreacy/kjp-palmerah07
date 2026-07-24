@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getParentSession } from "@/lib/parent-session";
 import {
-  studentDataDraftSchema,
-  guardianDataDraftSchema,
+  studentDataSchema,
+  guardianDataSchema,
   emergencyDataSchema,
 } from "@/lib/validations";
 
@@ -51,6 +51,10 @@ export async function POST(
     );
   }
 
+  if (!app) {
+    return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
+  }
+
   const [{ data: sd }, { data: gd }, { data: ec }] = await Promise.all([
     supabase.from("student_data").select("*").eq("application_id", params.id).maybeSingle(),
     supabase.from("guardian_data").select("*").eq("application_id", params.id).maybeSingle(),
@@ -63,30 +67,32 @@ export async function POST(
       { status: 400 }
     );
   }
-  const sRes = studentDataDraftSchema.safeParse(normalizeNulls(sd));
+  const sRes = studentDataSchema.safeParse(normalizeNulls(sd));
   if (!sRes.success) {
     return NextResponse.json(
       { error: "Data siswa belum lengkap: " + sRes.error.issues[0].path.join(".") },
       { status: 400 }
     );
   }
-  if (gd) {
-    const gRes = guardianDataDraftSchema.safeParse(normalizeNulls(gd));
-    if (!gRes.success) {
-      return NextResponse.json(
-        { error: "Data wali belum lengkap: " + gRes.error.issues[0].path.join(".") },
-        { status: 400 }
-      );
-    }
+  if (!gd) {
+    return NextResponse.json({ error: "Data wali belum diisi." }, { status: 400 });
   }
-  if (ec) {
-    const eRes = emergencyDataSchema.partial().safeParse(normalizeNulls(ec));
-    if (!eRes.success) {
-      return NextResponse.json(
-        { error: "Data kontak darurat belum lengkap." },
-        { status: 400 }
-      );
-    }
+  const gRes = guardianDataSchema.safeParse(normalizeNulls(gd));
+  if (!gRes.success) {
+    return NextResponse.json(
+      { error: "Data wali belum lengkap: " + gRes.error.issues[0].path.join(".") },
+      { status: 400 }
+    );
+  }
+  if (!ec) {
+    return NextResponse.json({ error: "Kontak darurat belum diisi." }, { status: 400 });
+  }
+  const eRes = emergencyDataSchema.safeParse(normalizeNulls(ec));
+  if (!eRes.success) {
+    return NextResponse.json(
+      { error: "Data kontak darurat belum lengkap." },
+      { status: 400 }
+    );
   }
 
   // Cek dokumen wajib

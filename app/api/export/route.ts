@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getActivePeriod } from "@/lib/admin-data";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +17,8 @@ const SKIP = new Set([
 ]);
 
 export async function GET() {
-  const sbAuth = createClient();
-  const { data: { user } } = await sbAuth.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Tidak autentikasi" }, { status: 401 });
-  }
+  const access = await requireAdmin();
+  if (!access) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   const period = await getActivePeriod();
   if (!period) {
     return NextResponse.json(

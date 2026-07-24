@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
+  }
   const form = await request.formData();
   const file = form.get("file") as File | null;
   const isPreview = form.get("preview") === "true";
@@ -129,10 +133,10 @@ export async function POST(request: Request) {
 
   if (!activePeriod) {
     const now = new Date();
-    const year = now.getFullYear();
+    const year = String(now.getFullYear());
     const { data: newPeriod, error: periodError } = await supabase
       .from("periods")
-      .insert({ year, is_active: true, start_date: `${year}-01-01`, end_date: `${year}-12-31` })
+      .insert({ year, label: `Tahun ${year}`, is_active: true })
       .select("id")
       .single();
     if (periodError || !newPeriod) {

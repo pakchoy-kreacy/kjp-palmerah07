@@ -11,9 +11,9 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     const { nisn } = await request.json();
-    if (!nisn || typeof nisn !== "string" || !nisn.trim()) {
+    if (!nisn || typeof nisn !== "string" || !/^\d{10}$/.test(nisn.trim())) {
       return NextResponse.json(
-        { error: "NISN wajib diisi." },
+        { error: "NISN harus 10 digit angka." },
         { status: 400 }
       );
     }
@@ -42,13 +42,6 @@ export async function POST(request: Request) {
       .select("value")
       .eq("key", "registration_status")
       .maybeSingle();
-    if (regSetting?.value && (regSetting.value as any).value === "CLOSED") {
-      return NextResponse.json(
-        { error: "Pendataan telah ditutup." },
-        { status: 403 }
-      );
-    }
-
     // 3. Periode aktif
     const { data: period, error: periodErr } = await supabase
       .from("periods")
@@ -72,6 +65,11 @@ export async function POST(request: Request) {
       .eq("period_id", period.id)
       .limit(1)
       .maybeSingle();
+
+    const registrationClosed = regSetting?.value && (regSetting.value as any).value === "CLOSED";
+    if (registrationClosed && (!existing || !["submitted", "verified"].includes(existing.status))) {
+      return NextResponse.json({ error: "Pendataan telah ditutup." }, { status: 403 });
+    }
 
     if (existing) {
       applicationId = existing.id;

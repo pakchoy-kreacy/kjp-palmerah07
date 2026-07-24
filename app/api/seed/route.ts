@@ -3,9 +3,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-const ADMIN_EMAIL = "admin@sekolah.sch.id";
-const ADMIN_PASSWORD = "admin123";
-
 const dummyStudents = [
   { nisn: "1234567890", name: "Budi Santoso", class: "6A" },
   { nisn: "1234567891", name: "Siti Rahmawati", class: "6A" },
@@ -14,6 +11,14 @@ const dummyStudents = [
 ];
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEV_SEED !== "true") {
+    return NextResponse.json({ error: "Endpoint seed dinonaktifkan." }, { status: 404 });
+  }
+  const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
+  const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    return NextResponse.json({ error: "Konfigurasi seed belum lengkap." }, { status: 500 });
+  }
   try {
     const supabase = createAdminClient();
     const results: string[] = [];
@@ -44,7 +49,7 @@ export async function GET() {
       });
 
       if (adminErr) return NextResponse.json({ error: adminErr.message }, { status: 500 });
-      results.push(`Admin berhasil dibuat: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
+      results.push(`Admin berhasil dibuat: ${ADMIN_EMAIL}`);
     }
 
     // ── 2. Ensure active period exists ─────────────────────────
@@ -135,7 +140,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       results,
-      admin: existingAdmin ? null : { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+      admin: existingAdmin ? null : { email: ADMIN_EMAIL },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });

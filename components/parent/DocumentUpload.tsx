@@ -103,7 +103,7 @@ export function DocumentUpload({
               if (f) handleFile(dt.id, f);
             }}
           >
-            <label className="flex cursor-pointer items-center gap-3 p-3">
+            <div className="flex items-center gap-3 p-3">
               <div className={cn(
                 "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                 uploaded ? "bg-green-100" : "bg-gray-100"
@@ -139,16 +139,33 @@ export function DocumentUpload({
               </div>
 
               <div className="shrink-0">
-                {uploaded ? (
-                  <div className="flex items-center gap-1 text-xs font-medium text-green-600">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Tersimpan</span>
-                  </div>
+                 {uploaded ? (
+                   <>
+                     <input
+                       id={`replace-${dt.id}`}
+                       type="file"
+                       accept="application/pdf"
+                       className="hidden"
+                       onChange={(e) => {
+                         const f = e.target.files?.[0];
+                         if (f) handleFile(dt.id, f);
+                         e.target.value = "";
+                       }}
+                     />
+                     <label
+                       htmlFor={`replace-${dt.id}`}
+                       className="flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-bold text-red-600 hover:bg-red-50"
+                     >
+                       <Upload className="h-3.5 w-3.5" />
+                       Ganti
+                     </label>
+                   </>
                 ) : isUploading ? (
                   <span className="text-xs font-medium text-red-500">Uploading...</span>
                 ) : (
                   <>
-                    <input
+                     <input
+                       id={`upload-${dt.id}`}
                       type="file"
                       accept="application/pdf"
                       capture={false}
@@ -159,14 +176,14 @@ export function DocumentUpload({
                         e.target.value = "";
                       }}
                     />
-                    <div className="flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-red-600 px-3 text-xs font-bold text-white shadow-sm transition-all hover:bg-red-700 hover:-translate-y-0.5 active:translate-y-0">
-                      <Upload className="h-3.5 w-3.5" />
-                      Pilih
-                    </div>
+                     <label htmlFor={`upload-${dt.id}`} className="flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-red-600 px-3 text-xs font-bold text-white shadow-sm transition-all hover:bg-red-700 hover:-translate-y-0.5 active:translate-y-0">
+                       <Upload className="h-3.5 w-3.5" />
+                       Pilih
+                     </label>
                   </>
                 )}
               </div>
-            </label>
+            </div>
           </div>
         );
       })}

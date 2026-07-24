@@ -4,6 +4,7 @@ import { getParentSession } from "@/lib/parent-session";
 import { studentDataDraftSchema } from "@/lib/validations/student";
 import { guardianDataDraftSchema } from "@/lib/validations/guardian";
 import { emergencyDataDraftSchema } from "@/lib/validations/emergency";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,7 @@ export async function GET() {
   }
 
   const supabase = createAdminClient();
+
   const { data: application } = await supabase
     .from("applications")
     .select("*")
@@ -110,17 +112,25 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Sesi tidak valid." }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { section, data } = body as {
-    section: "student" | "guardian" | "emergency";
-    data: Record<string, unknown>;
-  };
-
-  if (!section || !data) {
-    return NextResponse.json({ error: "Payload tidak lengkap." }, { status: 400 });
-  }
-
+  const body = await request.json().catch(() => null);
+  const payloadSchema = z.object({
+    section: z.enum(["student", "guardian", "emergency"]),
+    data: z.record(z.unknown()),
+  });
+  const parsed = payloadSchema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Payload tidak valid." }, { status: 400 });
+  const { section, data } = parsed.data;
   const supabase = createAdminClient();
+
+  const { data: application } = await supabase
+    .from("applications")
+    .select("status")
+    .eq("id", session.applicationId)
+    .maybeSingle();
+  if (!application) return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
+  if (application.status === "submitted" || application.status === "verified") {
+    return NextResponse.json({ error: "Pengajuan sudah terkunci." }, { status: 409 });
+  }
 
   // Ambil setting field untuk strip field yang dinonaktifkan
   const { data: formFields } = await supabase
@@ -139,13 +149,19 @@ export async function PATCH(request: Request) {
   let validated: Record<string, unknown>;
   let table: string;
   if (section === "student") {
-    validated = studentDataDraftSchema.parse(normalized);
+    const result = studentDataDraftSchema.safeParse(normalized);
+    if (!result.success) return NextResponse.json({ error: "Data siswa tidak valid.", fields: result.error.flatten().fieldErrors }, { status: 400 });
+    validated = result.data;
     table = "student_data";
   } else if (section === "guardian") {
-    validated = guardianDataDraftSchema.parse(normalized);
+    const result = guardianDataDraftSchema.safeParse(normalized);
+    if (!result.success) return NextResponse.json({ error: "Data wali tidak valid.", fields: result.error.flatten().fieldErrors }, { status: 400 });
+    validated = result.data;
     table = "guardian_data";
   } else {
-    validated = emergencyDataDraftSchema.parse(normalized);
+    const result = emergencyDataDraftSchema.safeParse(normalized);
+    if (!result.success) return NextResponse.json({ error: "Data kontak darurat tidak valid.", fields: result.error.flatten().fieldErrors }, { status: 400 });
+    validated = result.data;
     table = "emergency_contacts";
   }
 

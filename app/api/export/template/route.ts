@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export async function GET() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Tidak autentikasi" }, { status: 401 });
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   }
   const wb = XLSX.utils.book_new();
 

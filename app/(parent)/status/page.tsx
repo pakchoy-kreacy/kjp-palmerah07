@@ -24,6 +24,8 @@ export default async function StatusPage() {
     .eq("id", session.applicationId)
     .single();
 
+  if (!application) redirect("/");
+
   let student: any = null;
   if (application) {
     const { data: s } = await supabase
@@ -49,7 +51,7 @@ export default async function StatusPage() {
     document_type: docTypeMap.get(d.document_type_id) ?? null,
   }));
 
-  const status = application?.status as any;
+  const status = application.status as any;
 
   return (
     <GradientBackground>

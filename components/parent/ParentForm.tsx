@@ -8,7 +8,7 @@ import {
   Upload, Eye, CheckCircle2, AlertCircle, Loader2
 } from "lucide-react";
 import { useApplication, ApplicationPayload } from "@/hooks/useApplication";
-import { FormSection } from "@/components/parent/FormSection";
+import { FormSection, type FormSectionHandle } from "@/components/parent/FormSection";
 import { DocumentUpload } from "@/components/parent/DocumentUpload";
 import { Stepper } from "@/components/parent/Stepper";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,7 @@ export function ParentForm() {
   const [submitting, setSubmitting] = React.useState(false);
   const [currentStep, setCurrentStep] = React.useState<Step>("student");
   const [saving, setSaving] = React.useState<Step | null>(null);
+  const sectionRef = React.useRef<FormSectionHandle>(null);
 
   if (isLoading) {
     return (
@@ -75,23 +76,21 @@ export function ParentForm() {
   const status = application?.status as string;
   const locked = status === "submitted" || status === "verified";
 
-  const studentEnabled = new Set(STUDENT_FIELDS.map((f) => f.key));
-  const guardianEnabled = new Set(GUARDIAN_FIELDS.map((f) => f.key));
-  const emergencyEnabled = new Set(EMERGENCY_FIELDS.map((f) => f.key));
+  const enabledFromSettings = (section: "student" | "guardian" | "emergency", fields: typeof STUDENT_FIELDS) =>
+    new Set(fields.filter((field) => formFields.find((setting: any) => setting.section === section && setting.field_key === field.key)?.is_enabled !== false).map((field) => field.key));
+  const studentEnabled = enabledFromSettings("student", STUDENT_FIELDS);
+  const guardianEnabled = enabledFromSettings("guardian", GUARDIAN_FIELDS);
+  const emergencyEnabled = enabledFromSettings("emergency", EMERGENCY_FIELDS);
 
   const STUDENT_OPTIONAL = new Set([
-    "nik","no_kk","gender","mother_name","address","rt","rw","province","city","district","sub_district","postal_code",
-    "npwp","nisn","identity_expiry","identity_permanent","phone_mobile","phone_home",
-    "mail_pickup","address_type","residence_status","religion","education","disability",
+    "npwp","identity_expiry","identity_permanent","phone_home","address_type","residence_status","disability","mail_pickup",
   ]);
   const GUARDIAN_OPTIONAL = new Set([
-    "name","nik","ktp_expiry","ktp_permanent","npwp","no_kk","birth_place","birth_date",
-    "gender","religion","occupation","mother_name","marital_status","last_education",
-    "employment_status","address","rt","rw","province","city","district","sub_district",
-    "postal_code","residence_status","phone_mobile","phone_home","address_type",
+    "ktp_expiry","ktp_permanent","npwp","no_kk","birth_date","gender","religion","mother_name",
+    "marital_status","employment_status","residence_status","phone_home","address_type",
   ]);
   const EMERGENCY_OPTIONAL = new Set([
-    "name","id_number","relationship","address","rt","rw",
+    "id_number","relationship","address","rt","rw",
     "province","city","district","sub_district","postal_code","phone",
   ]);
 
@@ -127,6 +126,12 @@ export function ParentForm() {
 
   async function saveSection(section: Step) {
     if (section === "documents" || section === "review") return;
+    if (sectionRef.current) {
+      setSaving(section);
+      const saved = await sectionRef.current.validateAndSave();
+      setSaving(null);
+      return saved;
+    }
     setSaving(section);
     try {
       const dataToSave = {
@@ -142,15 +147,19 @@ export function ParentForm() {
       if (!res.ok) throw new Error();
       const label = { student: "Data siswa", guardian: "Data wali", emergency: "Kontak darurat" }[section];
       toast.success(`${label} tersimpan`);
+      return true;
     } catch {
       toast.error(`Gagal menyimpan data ${section}`);
+      return false;
     } finally {
       setSaving(null);
     }
   }
 
   async function goNext() {
-    await saveSection(currentStep);
+    if (locked) return;
+    const saved = await saveSection(currentStep);
+    if (saved === false) return;
     const idx = STEP_INDEX[currentStep];
     const nextKey = STEPS[idx + 1]?.key;
     if (nextKey) setCurrentStep(nextKey);
@@ -228,6 +237,7 @@ export function ParentForm() {
               fields={STUDENT_FIELDS}
               enabledKeys={studentEnabled}
               defaultValues={studentData ?? {}}
+              ref={sectionRef}
             />
           )}
 
@@ -239,6 +249,7 @@ export function ParentForm() {
               fields={GUARDIAN_FIELDS}
               enabledKeys={guardianEnabled}
               defaultValues={guardianData ?? {}}
+              ref={sectionRef}
             />
           )}
 
@@ -250,6 +261,7 @@ export function ParentForm() {
               fields={EMERGENCY_FIELDS}
               enabledKeys={emergencyEnabled}
               defaultValues={emergencyContact ?? {}}
+              ref={sectionRef}
             />
           )}
 
@@ -401,9 +413,10 @@ export function ParentForm() {
               )}
             </Button>
           ) : (
-            <Button
-              size="sm"
-              onClick={goNext}
+             <Button
+               size="sm"
+               onClick={goNext}
+               disabled={locked || saving !== null}
               className="gap-1"
             >
               Selanjutnya <ChevronRight className="h-4 w-4" />

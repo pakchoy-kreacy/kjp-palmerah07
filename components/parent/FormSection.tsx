@@ -21,64 +21,37 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FieldConfig } from "@/lib/form-config";
 import { cn } from "@/lib/utils";
 
+export interface FormSectionHandle {
+  validateAndSave: () => Promise<boolean>;
+}
+
 const OPTIONAL: Record<string, Set<string>> = {
   student: new Set([
-    "nik",
-    "no_kk",
-    "gender",
-    "mother_name",
-    "address",
-    "rt",
-    "rw",
-    "province",
-    "city",
-    "district",
-    "sub_district",
-    "postal_code",
     "npwp",
-    "nisn",
     "identity_expiry",
     "identity_permanent",
-    "phone_mobile",
     "phone_home",
-    "mail_pickup",
     "address_type",
     "residence_status",
-    "religion",
-    "education",
     "disability",
+    "mail_pickup",
   ]),
   guardian: new Set([
-    "name",
-    "nik",
     "ktp_expiry",
     "ktp_permanent",
     "npwp",
     "no_kk",
-    "birth_place",
     "birth_date",
     "gender",
     "religion",
-    "occupation",
     "mother_name",
     "marital_status",
-    "last_education",
     "employment_status",
-    "address",
-    "rt",
-    "rw",
-    "province",
-    "city",
-    "district",
-    "sub_district",
-    "postal_code",
     "residence_status",
-    "phone_mobile",
     "phone_home",
     "address_type",
   ]),
   emergency: new Set([
-    "name",
     "id_number",
     "relationship",
     "address",
@@ -89,7 +62,6 @@ const OPTIONAL: Record<string, Set<string>> = {
     "district",
     "sub_district",
     "postal_code",
-    "phone",
   ]),
 };
 
@@ -115,19 +87,13 @@ function buildSchema(
   return z.object(shape);
 }
 
-export function FormSection({
-  title,
-  section,
-  fields,
-  enabledKeys,
-  defaultValues,
-}: {
+export const FormSection = React.forwardRef<FormSectionHandle, {
   title: string;
   section: "student" | "guardian" | "emergency";
   fields: FieldConfig[];
   enabledKeys: Set<string>;
   defaultValues?: Record<string, any>;
-}) {
+}>(({ title, section, fields, enabledKeys, defaultValues }, ref) => {
   const enabled = fields.filter((f) => enabledKeys.has(f.key));
   const schema = React.useMemo(
     () => buildSchema(fields, enabledKeys, section),
@@ -156,6 +122,34 @@ export function FormSection({
     mode: "onBlur",
   });
 
+  const saveValues = React.useCallback(async (values: Record<string, unknown>, successMessage: string) => {
+    try {
+      const res = await fetch("/api/application", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section, data: values }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error ?? "Gagal menyimpan");
+      }
+      toast.success(successMessage);
+      return true;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan");
+      return false;
+    }
+  }, [section]);
+
+  React.useImperativeHandle(ref, () => ({
+    validateAndSave: () =>
+      new Promise((resolve) => {
+        void handleSubmit(async (values) => {
+          resolve(await saveValues(values as Record<string, unknown>, "Data berhasil disimpan"));
+        }, () => resolve(false))();
+      }),
+  }), [handleSubmit, saveValues]);
+
   const firstRender = React.useRef(true);
   React.useEffect(() => {
     const sub = watch((value) => {
@@ -179,13 +173,7 @@ export function FormSection({
   }, [watch, getValues, section]);
 
   const onManualSave = async () => {
-    const res = await fetch("/api/application", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ section, data: getValues() }),
-    });
-    if (res.ok) toast.success("Draft tersimpan");
-    else toast.error("Gagal menyimpan");
+    await saveValues(getValues() as Record<string, unknown>, "Draft tersimpan");
   };
 
   const selectedValues = React.useCallback((val: string | undefined) => {
@@ -201,7 +189,7 @@ export function FormSection({
         </Button>
       </div>
 
-      <form className="grid grid-cols-2 gap-3">
+      <form onSubmit={(event) => event.preventDefault()} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {enabled.map((f, i) => {
           const fieldError = (errors as any)[f.key]?.message as string | undefined;
           return (
@@ -323,4 +311,6 @@ export function FormSection({
       </form>
     </section>
   );
-}
+});
+
+FormSection.displayName = "FormSection";

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,9 @@ export async function GET(
   request: Request,
   { params }: { params: { uploadId: string } }
 ) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
+  }
   const supabase = createAdminClient();
   const { data: upload } = await supabase
     .from("document_uploads")

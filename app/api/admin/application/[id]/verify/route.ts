@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -7,12 +8,18 @@ export async function POST(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
+  const access = await requireAdmin();
+  if (!access) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
+  const { user } = access;
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Tidak autentikasi" }, { status: 401 });
+  const { data: application } = await supabase
+    .from("applications")
+    .select("status")
+    .eq("id", params.id)
+    .maybeSingle();
+  if (!application) return NextResponse.json({ error: "Pengajuan tidak ditemukan." }, { status: 404 });
+  if (application.status !== "submitted") {
+    return NextResponse.json({ error: "Hanya pengajuan submitted yang dapat diverifikasi." }, { status: 409 });
   }
 
   const { error } = await supabase
@@ -26,7 +33,7 @@ export async function POST(
     .eq("id", params.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Gagal memverifikasi pengajuan." }, { status: 500 });
   }
 
   await supabase.from("activity_logs").insert({

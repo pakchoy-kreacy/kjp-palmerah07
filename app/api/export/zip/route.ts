@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getParentSession } from "@/lib/parent-session";
 import JSZip from "jszip";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -12,14 +13,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "applicationId wajib." }, { status: 400 });
   }
 
-  // Izinkan parent session atau admin auth
+  // Izinkan parent hanya untuk application miliknya.
   const parentSession = await getParentSession();
-  if (!parentSession) {
-    const supabase = createAdminClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Sesi tidak valid." }, { status: 401 });
+  if (parentSession) {
+    if (parentSession.applicationId !== applicationId) {
+      return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
     }
+  } else if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   }
 
   const supabase = createAdminClient();
@@ -50,8 +51,9 @@ export async function GET(request: Request) {
 
     if (fileData) {
       const buf = Buffer.from(await fileData.arrayBuffer());
-      const folderName = typeMap.get(doc.document_type_id) ?? "Lainnya";
-      zip.file(`${folderName}/${doc.file_name}`, buf);
+      const folderName = safeZipName(typeMap.get(doc.document_type_id) ?? "Lainnya");
+      const fileName = safeZipName(doc.file_name || "dokumen");
+      zip.file(`${folderName}/${fileName}`, buf);
     }
   }
 
@@ -63,4 +65,13 @@ export async function GET(request: Request) {
       "Content-Disposition": `attachment; filename="dokumen-${applicationId}.zip"`,
     },
   });
+}
+
+function safeZipName(value: string) {
+  return value
+    .normalize("NFKC")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\.\.+/g, "_")
+    .replace(/^\.+/, "_")
+    .slice(0, 120) || "dokumen";
 }

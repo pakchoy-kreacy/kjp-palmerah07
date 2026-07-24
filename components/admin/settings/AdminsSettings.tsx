@@ -47,25 +47,15 @@ export function AdminsSettings() {
       toast.error("Lengkapi nama, email, password");
       return;
     }
-    const supabase = createClient();
-    const { data: authData, error: authErr } =
-      await supabase.auth.admin.createUser({
-        email: form.email,
-        password: form.password,
-        email_confirm: true,
-      });
-    if (authErr || !authData.user) {
-      toast.error(authErr?.message ?? "Gagal buat user");
-      return;
-    }
-    const { error } = await supabase.from("admins").insert({
-      id: authData.user.id,
-      name: form.name,
-      email: form.email,
-      role: form.role,
+    const res = await fetch("/api/admin/admins", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
     });
-    if (error) toast.error(error.message);
-    else {
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      toast.error(json?.error ?? "Gagal membuat admin");
+    } else {
       toast.success("Admin ditambah");
       setForm({ name: "", email: "", password: "", role: "admin" });
       load();
@@ -73,10 +63,16 @@ export function AdminsSettings() {
   }
 
   async function remove(id: string) {
-    const supabase = createClient();
-    const { error } = await supabase.from("admins").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
+    if (!window.confirm("Hapus admin ini?")) return;
+    const res = await fetch("/api/admin/admins", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      toast.error(json?.error ?? "Gagal menghapus admin");
+    } else {
       toast.success("Dihapus");
       load();
     }
