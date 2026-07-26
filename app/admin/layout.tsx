@@ -7,6 +7,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await requireAdmin())) redirect("/admin/login");
+  const session = await requireAdmin();
+  if (!session) redirect("/admin/login");
   return <AdminShell>{children}</AdminShell>;
 }
