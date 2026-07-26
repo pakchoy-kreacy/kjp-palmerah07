@@ -11,7 +11,7 @@ const dummyStudents = [
 ];
 
 export async function GET() {
-  if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEV_SEED !== "true") {
+  if (process.env.ALLOW_DEV_SEED !== "true") {
     return NextResponse.json({ error: "Endpoint seed dinonaktifkan." }, { status: 404 });
   }
   const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;

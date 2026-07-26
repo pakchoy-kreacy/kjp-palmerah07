@@ -10,3 +10,4 @@ next-env.d.ts
 
 # Docs (jangan di-push)
 *.md
+.vercel
