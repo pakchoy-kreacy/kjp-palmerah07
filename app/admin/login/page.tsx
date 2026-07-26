@@ -18,6 +18,14 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  React.useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) window.location.href = "/admin/dashboard";
+    })();
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -32,8 +40,7 @@ export default function AdminLoginPage() {
       });
       if (signInError) { setError(signInError.message); return; }
       toast.success("Login berhasil");
-      router.push("/admin/dashboard");
-      router.refresh();
+      window.location.href = "/admin/dashboard";
     } catch {
       setError("Terjadi kesalahan. Coba lagi.");
     } finally {
