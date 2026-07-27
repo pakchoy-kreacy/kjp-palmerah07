@@ -39,6 +39,15 @@ export default function AdminLoginPage() {
         email: email.trim(), password,
       });
       if (signInError) { setError(signInError.message); return; }
+
+      const adminCheck = await fetch("/api/admin/session", { cache: "no-store" });
+      if (!adminCheck.ok) {
+        await supabase.auth.signOut();
+        const json = await adminCheck.json().catch(() => null);
+        setError(json?.error ?? "Akun ini tidak terdaftar sebagai admin sekolah.");
+        return;
+      }
+
       toast.success("Login berhasil");
       window.location.href = "/admin/dashboard";
     } catch {
