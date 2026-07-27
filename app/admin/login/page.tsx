@@ -20,9 +20,8 @@ export default function AdminLoginPage() {
 
   React.useEffect(() => {
     (async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) window.location.href = "/admin/dashboard";
+      const res = await fetch("/api/admin/session", { cache: "no-store" });
+      if (res.ok) window.location.href = "/admin/dashboard";
     })();
   }, []);
 

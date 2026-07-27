@@ -24,11 +24,28 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [stats, rows, period] = await Promise.all([
-    getDashboardStats(),
-    getStudentRows(),
-    getActivePeriod(),
-  ]);
+  let stats, rows, period;
+  try {
+    [stats, rows, period] = await Promise.all([
+      getDashboardStats(),
+      getStudentRows(),
+      getActivePeriod(),
+    ]);
+  } catch (e) {
+    console.error("dashboard load error:", e);
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="mx-auto h-10 w-10 text-red-400" />
+          <h2 className="mt-3 text-lg font-bold text-gray-900">Gagal memuat dashboard</h2>
+          <p className="mt-1 text-sm text-gray-500">Periksa koneksi database dan coba lagi.</p>
+          <Button asChild className="mt-4 gap-2">
+            <Link href="/admin/dashboard"><RefreshCw className="h-4 w-4" /> Muat Ulang</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const recent = [...rows]
     .sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))
