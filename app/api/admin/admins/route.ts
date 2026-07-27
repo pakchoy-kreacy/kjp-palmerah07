@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireAdmin } from "@/lib/auth/admin";
+import { requireAdmin, isAdminAccess } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +13,9 @@ const adminInput = z.object({
 });
 
 export async function POST(request: Request) {
-  const access = await requireAdmin();
-  if (!access) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
-  if (access.admin.role !== "superadmin") {
+  const result = await requireAdmin();
+  if (!isAdminAccess(result)) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
+  if (result.admin.role !== "superadmin") {
     return NextResponse.json({ error: "Hanya superadmin yang dapat mengelola admin." }, { status: 403 });
   }
 
@@ -47,16 +47,16 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const access = await requireAdmin();
-  if (!access) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
-  if (access.admin.role !== "superadmin") {
+  const result = await requireAdmin();
+  if (!isAdminAccess(result)) return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
+  if (result.admin.role !== "superadmin") {
     return NextResponse.json({ error: "Hanya superadmin yang dapat mengelola admin." }, { status: 403 });
   }
 
   const body = await request.json().catch(() => null);
   const id = typeof body?.id === "string" ? body.id : "";
   if (!id) return NextResponse.json({ error: "ID admin wajib diisi." }, { status: 400 });
-  if (id === access.user.id) return NextResponse.json({ error: "Tidak dapat menghapus akun sendiri." }, { status: 400 });
+  if (id === result.user.id) return NextResponse.json({ error: "Tidak dapat menghapus akun sendiri." }, { status: 400 });
 
   const supabase = createAdminClient();
   const { count } = await supabase.from("admins").select("id", { count: "exact", head: true });

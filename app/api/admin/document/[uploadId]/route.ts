@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireAdmin } from "@/lib/auth/admin";
+import { requireAdmin, isAdminAccess } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,7 @@ export async function GET(
   request: Request,
   { params }: { params: { uploadId: string } }
 ) {
-  if (!(await requireAdmin())) {
+  if (!isAdminAccess(await requireAdmin())) {
     return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   }
   const supabase = createAdminClient();

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getParentSession } from "@/lib/parent-session";
 import JSZip from "jszip";
-import { requireAdmin } from "@/lib/auth/admin";
+import { requireAdmin, isAdminAccess } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     if (parentSession.applicationId !== applicationId) {
       return NextResponse.json({ error: "Akses ditolak." }, { status: 403 });
     }
-  } else if (!(await requireAdmin())) {
+  } else if (!isAdminAccess(await requireAdmin())) {
     return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   }
 

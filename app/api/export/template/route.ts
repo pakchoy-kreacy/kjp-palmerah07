@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { requireAdmin } from "@/lib/auth/admin";
+import { requireAdmin, isAdminAccess } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (!(await requireAdmin())) {
+  if (!isAdminAccess(await requireAdmin())) {
     return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
   }
   const wb = XLSX.utils.book_new();

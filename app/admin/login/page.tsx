@@ -17,6 +17,8 @@ export default function AdminLoginPage() {
   const [remember, setRemember] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [denyReason, setDenyReason] = React.useState<string | null>(null);
+  const [setupLoading, setSetupLoading] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -28,6 +30,7 @@ export default function AdminLoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setDenyReason(null);
     if (!email.trim()) { setError("Masukkan email."); return; }
     if (!password) { setError("Masukkan password."); return; }
 
@@ -43,7 +46,15 @@ export default function AdminLoginPage() {
       if (!adminCheck.ok) {
         await supabase.auth.signOut();
         const json = await adminCheck.json().catch(() => null);
-        setError(json?.error ?? "Akun ini tidak terdaftar sebagai admin sekolah.");
+        const reason = json?.reason;
+        let msg = json?.error ?? "Akun ini tidak terdaftar sebagai admin sekolah.";
+        if (reason === "no_admin_row") {
+          msg = "User Supabase Auth ada, tapi belum terdaftar di tabel admins. Klik tombol Setup di bawah.";
+        } else if (reason === "service_role_missing") {
+          msg = "SUPABASE_SERVICE_ROLE_KEY belum diset. Tambahkan env var di Vercel.";
+        }
+        setError(msg);
+        setDenyReason(reason);
         return;
       }
 
@@ -116,6 +127,37 @@ export default function AdminLoginPage() {
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
                 <span className="relative text-sm">{loading ? "Memproses..." : "Masuk"}</span>
               </button>
+
+              {denyReason === "no_admin_row" && (
+                <button
+                  type="button"
+                  disabled={setupLoading}
+                  onClick={async () => {
+                    setSetupLoading(true);
+                    try {
+                      const supabase = createClient();
+                      const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email.trim(), password,
+                      });
+                      if (signInError) { setError(signInError.message); return; }
+
+                      const res = await fetch("/api/admin/setup", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name: "Admin Sekolah" }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) { setError(json.error); await supabase.auth.signOut(); return; }
+                      toast.success("Admin berhasil di-setup!");
+                      window.location.href = "/admin/dashboard";
+                    } catch { setError("Gagal setup admin."); }
+                    finally { setSetupLoading(false); }
+                  }}
+                  className="flex h-10 w-full items-center justify-center rounded-xl bg-amber-500 font-bold text-white shadow-sm transition-colors hover:bg-amber-600 disabled:opacity-60"
+                >
+                  {setupLoading ? "Menyetup..." : "Setup Admin (Buat Row admins)"}
+                </button>
+              )}
             </form>
           </GlassCard>
         </div>
