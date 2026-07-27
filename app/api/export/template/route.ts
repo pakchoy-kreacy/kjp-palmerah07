@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { requireAdmin } from "@/lib/auth/admin";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Akses admin diperlukan." }, { status: 403 });
